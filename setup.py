@@ -3,7 +3,7 @@ from setuptools import find_packages
 from distutils.core import setup
 
 package_name = "dbt-netezza"
-package_version = "0.0.1"
+package_version = "0.1.1"
 description = """The netezza adpter plugin for dbt (data build tool)"""
 
 setup(
@@ -22,7 +22,7 @@ setup(
         ]
     },
     install_requires=[
-        'dbt-core == 0.14.3',
+        'dbt-core ~= 0.15.0',
         'pyodbc'
     ]
 )
