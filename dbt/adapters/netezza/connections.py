@@ -3,48 +3,24 @@ from dataclasses import dataclass
 from typing import List, Optional, Tuple, Any, Iterable, Dict
 import pyodbc
 import time
+from dataclasses import dataclass
+from typing import Optional
 
 import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.logger import GLOBAL_LOGGER as logger
 from dbt.contracts.connection import Connection
+from dbt.helper_types import Port
 
 
-NETEZZA_CREDENTIALS_CONTRACT = {
-    'type': 'object',
-    'additionalProperties': False,
-    'properties': {
-        'dsn': {
-            'type': 'string',
-        },
-        'database': {
-            'type': 'string',
-        },
-        'schema': {
-            'type': 'string',
-        },
-        'host': {
-            'type': 'string',
-        },
-        'port': {
-            'type': 'integer',
-            'minimum': 0,
-            'maximum': 65535,
-        },
-        'username': {
-            'type': 'string',
-        },
-        'password': {
-            'type': 'string',
-        },
-    },
-    'required': ('username', 'password')
-}
-
-
+@dataclass
 class NetezzaCredentials(Credentials):
-    SCHEMA = NETEZZA_CREDENTIALS_CONTRACT
+    host: str
+    username: str
+    password: str
+    port: Optional[Port] = 5480
+    dsn: Optional[str] = None
 
     _ALIASES = {
         'user': 'username',
@@ -94,7 +70,7 @@ class NetezzaConnectionManager(SQLConnectionManager):
 
         try:
             connection_args = {}
-            if hasattr(credentials, 'dsn'):
+            if credentials.dsn:
                 connection_args = {
                     'DSN': credentials.dsn
                 }
@@ -126,11 +102,11 @@ class NetezzaConnectionManager(SQLConnectionManager):
 
     @classmethod
     def get_status(cls, cursor):
-        # return cursor.statusmessage
+        # TODO Implement if odbc cursor provides status
         return 'ok'
 
     def cancel(self, connection):
-        # To implement
+        # TODO Implement
         pass
 
     def add_query(
