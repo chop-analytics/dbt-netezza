@@ -1,5 +1,4 @@
-{% macro netezza__load_csv_rows(model, batch_size) %}
-    {% set agate_table = model['agate_table'] %}
+{% macro netezza__load_csv_rows(model, agate_table) %}
     {% set cols_sql = ", ".join(agate_table.column_names) %}
     {% set bindings = [] %}
 
@@ -7,7 +6,7 @@
     {{ agate_table.to_csv(temp) }}
 
     {% set sql %}
-        insert into {{ this.render(False) }} ({{ cols_sql }}) 
+        insert into {{ this.render() }} ({{ cols_sql }}) 
         select * from external '{{ temp }}'
         using (
             REMOTESOURCE 'ODBC'
