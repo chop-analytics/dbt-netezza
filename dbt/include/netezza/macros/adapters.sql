@@ -19,6 +19,27 @@
   {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
 
+{% macro netezza__create_table_as(temporary, relation, sql) -%}
+  {%- set sql_header = config.get('sql_header', none) -%}
+
+  {{ sql_header if sql_header is not none }}
+
+  create {% if temporary: -%}temporary{%- endif %} table
+    {{ relation.include(database=(not temporary), schema=(not temporary)).upper() }}
+  as (
+    {{ sql }}
+  );
+{% endmacro %}
+
+{% macro netezza__create_view_as(relation, sql) -%}
+  {%- set sql_header = config.get('sql_header', none) -%}
+
+  {{ sql_header if sql_header is not none }}
+  create view {{ relation.upper() }} as (
+    {{ sql }}
+  );
+{% endmacro %}
+
 {% macro netezza__get_columns_in_relation(relation) -%}
   {% call statement('get_columns_in_relation', fetch_result=True) %}
       select
