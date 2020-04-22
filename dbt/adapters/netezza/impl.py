@@ -30,7 +30,7 @@ class NetezzaAdapter(SQLAdapter):
 
     # set schema, database, and identifier to upper to match Netezza behavior
     def _make_match_kwargs(self, database: str, schema: str, identifier: str
-    ) -> Dict[str, str]:):
+    ):
         quoting = self.config.quoting
         if identifier is not None and quoting["identifier"] is False:
             identifier = identifier.upper()
