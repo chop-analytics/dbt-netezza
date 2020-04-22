@@ -3,9 +3,9 @@ import agate
 from dbt.adapters.sql import SQLAdapter
 from dbt.adapters.netezza import NetezzaConnectionManager
 from dbt.adapters.netezza.relation import NetezzaRelation
+from dbt.contracts.graph.manifest import Manifest
 from dbt.exceptions import get_relation_returned_multiple_results
 from dbt.utils import filter_null_values
-from dbt.contracts.graph.manifest import Manifest
 
 class NetezzaAdapter(SQLAdapter):
     ConnectionManager = NetezzaConnectionManager
@@ -15,6 +15,9 @@ class NetezzaAdapter(SQLAdapter):
     def date_function(cls):
         return 'now()'
 
+    # overriding method because Netezza uppercases by default
+    # and we want to avoid quoting of columns
+    # follows https://github.com/fishtown-analytics/dbt/blob/566f78a95c03f899d740d1df4a32c4462f7e0fca/plugins/snowflake/dbt/adapters/snowflake/impl.py#L32-L56
     @classmethod
     def _catalog_filter_table(
         cls, table: agate.Table, manifest: Manifest
@@ -25,7 +28,9 @@ class NetezzaAdapter(SQLAdapter):
         
         return super()._catalog_filter_table(lowered, manifest)
 
-    def _make_match_kwargs(self, database, schema, identifier):
+    # set schema, database, and identifier to upper to match Netezza behavior
+    def _make_match_kwargs(self, database: str, schema: str, identifier: str
+    ) -> Dict[str, str]:):
         quoting = self.config.quoting
         if identifier is not None and quoting["identifier"] is False:
             identifier = identifier.upper()
@@ -46,33 +51,6 @@ class NetezzaAdapter(SQLAdapter):
         lens = (len(d.encode('utf-8')) for d in column.values_without_nulls())
         max_len = max(lens) if lens else 64
         return f'varchar({max_len})'
- 
-    # def _make_match_kwargs(self, database, schema, identifier):
-    #     quoting = self.config.quoting
-
-    #     return filter_null_values({
-    #         'database': database,
-    #         'identifier': identifier,
-    #         'schema': schema,
-    #     })
-
-    # def rename_relation(self, from_relation, to_relation):
-        
-    #     from_relation_upper = from_relation
-    #     to_relation_upper = to_relation
-        
-    #     super().rename_relation(from_relation_upper, to_relation_upper)
-
-
-    # def get_relation(self, database, schema, identifier):
-        
-    #     database_upper = database.upper()
-    #     schema_upper = schema.upper()
-    #     identifier_upper = identifier.upper()
-    #     print(f'{database} {database_upper} {schema} {schema_upper} {identifier} {identifier_upper}')
-
-    #     super().get_relation(database_upper, schema_upper, identifier_upper)
-
 
     def drop_relation(self, relation):
         if relation.type == 'view':
