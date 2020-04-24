@@ -2,7 +2,7 @@
     {% set cols_sql = get_seed_column_quoted_csv(model, agate_table.column_names) %}
     {% set bindings = [] %}
 
-    {% set temp = '/tmp/netezza_bulk_load.csv' %}
+    {% set temp = '/tmp/'~ this.render() ~ '.csv' %}
     {{ agate_table.to_csv(temp) }}
 
     {% set sql %}
