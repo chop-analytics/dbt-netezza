@@ -10,6 +10,7 @@
         select * from external '{{ temp }}'
         using (
             REMOTESOURCE 'ODBC'
+            NULLVALUE ''
             DELIMITER ','
             SKIPROWS 1
             MAXERRORS 1
