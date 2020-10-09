@@ -5,7 +5,7 @@
       tablename as name,
       schema as schema,
       'table' as type
-    from _v_table
+    from {{ information_schema.database }}.._v_table
     where schema ilike '{{ schema }}'
     union all
     select
@@ -13,7 +13,7 @@
       viewname as name,
       schema as schema,
       'view' as type
-    from _v_view
+    from {{ information_schema.database }}.._v_view
     where schema ilike '{{ schema }}'
   {% endcall %}
   {{ return(load_result('list_relations_without_caching').table) }}

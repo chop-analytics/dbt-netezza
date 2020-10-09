@@ -18,8 +18,7 @@
 {% endmacro %}
 
 {% macro netezza__rename_relation(from_relation, to_relation) -%}
-  {% set target_name = adapter.quote_as_configured(to_relation.identifier, 'identifier') %}
   {% call statement('rename_relation') -%}
-    alter {{ from_relation.type }} {{ from_relation }} rename to {{ target_name }}
+    alter {{ from_relation.type }} {{ from_relation }} rename to {{ to_relation }}
   {%- endcall %}
 {% endmacro %}
