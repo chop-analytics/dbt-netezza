@@ -1,5 +1,5 @@
 {% macro netezza__list_relations_without_caching(information_schema, schema) %}
-  {% call statement('list_relations_without_caching', fetch_result=True) -%}
+  {% call statement('list_relations_without_caching', fetch_result=True, auto_begin=False) -%}
     select
       '{{ information_schema.database }}' as database,
       tablename as name,

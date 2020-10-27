@@ -7,6 +7,7 @@ from dbt.contracts.graph.manifest import Manifest
 from dbt.exceptions import get_relation_returned_multiple_results
 from dbt.utils import filter_null_values
 
+
 class NetezzaAdapter(SQLAdapter):
     ConnectionManager = NetezzaConnectionManager
     Relation = NetezzaRelation
@@ -21,16 +22,15 @@ class NetezzaAdapter(SQLAdapter):
     @classmethod
     def _catalog_filter_table(
         cls, table: agate.Table, manifest: Manifest
-        ) -> agate.Table:
+    ) -> agate.Table:
         lowered = table.rename(
             column_names=[c.lower() for c in table.column_names]
         )
-        
+
         return super()._catalog_filter_table(lowered, manifest)
 
     # set schema, database, and identifier to upper to match Netezza behavior
-    def _make_match_kwargs(self, database: str, schema: str, identifier: str
-    ):
+    def _make_match_kwargs(self, database: str, schema: str, identifier: str):
         quoting = self.config.quoting
         if identifier is not None and quoting["identifier"] is False:
             identifier = identifier.upper()
@@ -54,15 +54,17 @@ class NetezzaAdapter(SQLAdapter):
 
     def drop_relation(self, relation):
         if relation.type == 'view':
-            # Get all relations and check if view exists
+            # Netezza does not support `drop view if exists`, so it is necessary
+            # to check if the view exists before dropping
+            identifier = relation.identifier.upper()
             relations = self.list_relations_without_caching(
                 relation, relation.schema)
+            no_relation_exists = next(
+                rel for rel in relations
+                if rel.type == 'view' and rel.identifier == identifier
+            ) is None
 
-            valid_views = filter(lambda db_relation:
-                                 db_relation.type == 'view' and
-                                 db_relation.name.lower() == relation.name.lower(),
-                                 relations)
-            if not list(valid_views):
+            if no_relation_exists:
                 return
 
         super().drop_relation(relation)
