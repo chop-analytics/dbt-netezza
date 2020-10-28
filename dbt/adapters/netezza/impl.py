@@ -57,8 +57,7 @@ class NetezzaAdapter(SQLAdapter):
             # Netezza does not support `drop view if exists`, so it is necessary
             # to check if the view exists before dropping
             identifier = relation.identifier.upper()
-            relations = self.list_relations_without_caching(
-                relation, relation.schema)
+            relations = self.list_relations_without_caching(relation)
             no_relation_exists = next(
                 rel for rel in relations
                 if rel.type == 'view' and rel.identifier == identifier

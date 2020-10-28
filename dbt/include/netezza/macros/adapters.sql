@@ -1,19 +1,19 @@
-{% macro netezza__list_relations_without_caching(information_schema, schema) %}
+{% macro netezza__list_relations_without_caching(schema_relation) %}
   {% call statement('list_relations_without_caching', fetch_result=True, auto_begin=False) -%}
     select
-      '{{ information_schema.database }}' as database,
+      '{{ schema_relation.database }}' as database,
       tablename as name,
       schema as schema,
       'table' as type
-    from {{ information_schema.database }}.._v_table
+    from {{ schema_relation.database }}.._v_table
     where schema ilike '{{ schema }}'
     union all
     select
-      '{{ information_schema.database }}' as database,
+      '{{ schema_relation.database }}' as database,
       viewname as name,
       schema as schema,
       'view' as type
-    from {{ information_schema.database }}.._v_view
+    from {{ schema_relation.database }}.._v_view
     where schema ilike '{{ schema }}'
   {% endcall %}
   {{ return(load_result('list_relations_without_caching').table) }}
