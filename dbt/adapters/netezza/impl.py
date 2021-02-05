@@ -48,7 +48,10 @@ class NetezzaAdapter(SQLAdapter):
     @classmethod
     def convert_text_type(cls, agate_table, col_idx):
         column = agate_table.columns[col_idx]
-        lens = (len(d.encode('utf-8')) for d in column.values_without_nulls())
+        # `lens` must be a list, so this can't be a generator expression,
+        # because max() raises an exception if its argument has no members.
+        # source: https://github.com/fishtown-analytics/dbt/pull/2255/files#diff-39545f1198b754f67de59957630a527b6d1df026aff22cc90de923f5653d5ad8
+        lens = [len(d.encode("utf-8")) for d in column.values_without_nulls()]
         max_len = max(lens) if lens else 64
         return f'varchar({max_len})'
 
