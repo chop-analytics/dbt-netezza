@@ -1,16 +1,24 @@
 import agate
+from dataclasses import dataclass
+from typing import Optional
 
 from dbt.adapters.sql import SQLAdapter
 from dbt.adapters.netezza import NetezzaConnectionManager
+from dbt.adapters.base.impl import AdapterConfig
 from dbt.adapters.netezza.relation import NetezzaRelation
 from dbt.contracts.graph.manifest import Manifest
 from dbt.exceptions import get_relation_returned_multiple_results
 from dbt.utils import filter_null_values
 
 
+@dataclass
+class NetezzaConfig(AdapterConfig):
+    dist: Optional[str] = None
+
 class NetezzaAdapter(SQLAdapter):
     ConnectionManager = NetezzaConnectionManager
     Relation = NetezzaRelation
+    AdapterSpecificConfigs = NetezzaConfig
 
     @classmethod
     def date_function(cls):

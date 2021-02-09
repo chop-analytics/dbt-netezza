@@ -1,3 +1,39 @@
+{% macro dist(dist) %}
+  {%- if dist is not none -%}
+      {%- if dist is string -%}
+        {%- if dist in ['random'] -%}
+          distribute on {{ dist }}
+        {%- else -%}
+          distribute on ({{ dist }})
+        {%- endif -%}
+      {%- else -%}
+        distribute on (
+          {%- for item in dist -%}
+            {{ item }}
+            {%- if not loop.last -%},{%- endif -%}
+          {%- endfor -%}
+        )  
+      {%- endif -%}
+  {%- endif -%}
+{%- endmacro -%}
+
+
+{% macro netezza__create_table_as(temporary, relation, sql) -%}
+
+  {%- set _dist = config.get('dist') -%}
+  {%- set sql_header = config.get('sql_header', none) -%}
+
+  {{ sql_header if sql_header is not none }}
+
+  create {% if temporary -%}temporary{%- endif %} table
+    {{ relation.include(database=(not temporary), schema=(not temporary)) }}
+  as (
+    {{ sql }}
+  )
+  {{ dist(_dist) }}
+  ;
+{%- endmacro %}
+
 {% macro netezza__list_relations_without_caching(schema_relation) %}
   {% call statement('list_relations_without_caching', fetch_result=True, auto_begin=False) -%}
     select
