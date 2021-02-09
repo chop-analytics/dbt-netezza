@@ -4,6 +4,8 @@ The `dbt-netezza` package contains all of the code required to make `dbt` operat
 
 ## Netezza Configurations
 
+Code and documentaiton inspired by the [redshift dbt plugin](https://github.com/fishtown-analytics/dbt/tree/develop/plugins/redshift), as Netezza and Redshift share some common architectural patterns.
+
 ### Performance Optimizations
 
 Tables in Netezza have an optimization to improve query performance called distribution keys. Supplying these values as model-level configurations apply the corresponding settings in the generated `CREATE TABLE` DDL. Note that these settings will have no effect for models set to view or ephemeral models.
