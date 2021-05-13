@@ -10,7 +10,7 @@ import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.logger import GLOBAL_LOGGER as logger
-from dbt.contracts.connection import Connection
+from dbt.contracts.connection import Connection, AdapterResponse
 from dbt.helper_types import Port
 
 
@@ -101,7 +101,7 @@ class NetezzaConnectionManager(SQLConnectionManager):
         return connection
 
     @classmethod
-    def get_status(cls, cursor):
+    def get_response(cls, cursor) -> AdapterResponse:
         # TODO Implement if odbc cursor provides status
         return 'ok'
 
@@ -141,6 +141,6 @@ class NetezzaConnectionManager(SQLConnectionManager):
                 cursor.execute(sql)
 
             logger.debug(
-                f"SQL status: {self.get_status(cursor)} in {time.time() - pre:0.2f} seconds")
+                f"SQL status: {self.get_response(cursor)} in {time.time() - pre:0.2f} seconds")
 
             return connection, cursor
