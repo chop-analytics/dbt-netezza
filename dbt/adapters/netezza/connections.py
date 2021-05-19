@@ -19,7 +19,7 @@ class NetezzaCredentials(Credentials):
     host: str
     username: str
     password: str
-    port: Optional[Port] = 5480
+    port: Port = Port(5480)
     dsn: Optional[str] = None
 
     _ALIASES = {
