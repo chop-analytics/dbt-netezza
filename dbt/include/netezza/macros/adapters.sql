@@ -26,7 +26,7 @@
   {{ sql_header if sql_header is not none }}
 
   create {% if temporary -%}temporary{%- endif %} table
-    {{ relation.include(database=(not temporary), schema=(not temporary)) }}
+    {{ relation }}
   as (
     {{ sql }}
   )
