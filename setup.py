@@ -22,7 +22,7 @@ setup(
         ]
     },
     install_requires=[
-        'dbt-core==0.19.1',
+        'dbt-core==0.20.0',
         'pyodbc'
     ]
 )
