@@ -75,3 +75,31 @@
   {% set table = load_result('get_columns_in_relation').table %}
   {{ return(sql_convert_columns_in_relation(table)) }}
 {% endmacro %}
+
+{% macro netezza__current_timestamp() -%}
+  current_timestamp
+{%- endmacro %}
+
+{% macro netezza__snapshot_merge_sql(target, source, insert_cols) -%}
+    {%- set insert_cols_csv = insert_cols | join(', ') -%}
+
+    update {{ target }}
+    set dbt_valid_to = DBT_INTERNAL_SOURCE.dbt_valid_to
+    from {{ source }} as DBT_INTERNAL_SOURCE
+    where DBT_INTERNAL_SOURCE.dbt_scd_id = {{ target }}.dbt_scd_id
+      and DBT_INTERNAL_SOURCE.dbt_change_type::text in ('update'::text, 'delete'::text)
+      and {{ target }}.dbt_valid_to is null;
+
+    insert into {{ target }} ({{ insert_cols_csv }})
+    select {% for column in insert_cols -%}
+        DBT_INTERNAL_SOURCE.{{ column }} {%- if not loop.last %}, {%- endif %}
+    {%- endfor %}
+    from {{ source }} as DBT_INTERNAL_SOURCE
+    where DBT_INTERNAL_SOURCE.dbt_change_type::text = 'insert'::text;
+{% endmacro %}
+
+
+{% macro netezza__snapshot_string_as_time(timestamp) -%}
+    {%- set result = "'" ~ timestamp ~ "'" -%}
+    {{ return(result) }}
+{%- endmacro %}
