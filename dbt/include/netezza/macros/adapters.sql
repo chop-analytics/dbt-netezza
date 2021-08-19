@@ -100,6 +100,6 @@
 
 
 {% macro netezza__snapshot_string_as_time(timestamp) -%}
-    {%- set result = "'" ~ timestamp ~ "'" -%}
+    {%- set result = "'" ~ timestamp ~ "'" ~ "::timestamp" -%}
     {{ return(result) }}
 {%- endmacro %}
