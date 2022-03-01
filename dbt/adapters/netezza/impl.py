@@ -1,13 +1,18 @@
 import agate
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 from dbt.adapters.sql import SQLAdapter
+from dbt.adapters.sql.impl import (
+    LIST_RELATIONS_MACRO_NAME
+)
 from dbt.adapters.netezza import NetezzaConnectionManager
 from dbt.adapters.base.impl import AdapterConfig
 from dbt.adapters.netezza.relation import NetezzaRelation
 from dbt.contracts.graph.manifest import Manifest
-from dbt.exceptions import get_relation_returned_multiple_results
+from dbt.exceptions import (
+    get_relation_returned_multiple_results, DatabaseException
+)
 from dbt.utils import filter_null_values
 
 
@@ -36,6 +41,45 @@ class NetezzaAdapter(SQLAdapter):
         )
 
         return super()._catalog_filter_table(lowered, manifest)
+
+    def list_relations_without_caching(
+            self, schema_relation: NetezzaRelation
+    ) -> List[NetezzaRelation]:
+        kwargs = {'schema_relation': schema_relation}
+        try:
+            results = self.execute_macro(
+                LIST_RELATIONS_MACRO_NAME,
+                kwargs=kwargs
+            )
+        except DatabaseException as exc:
+            # if the schema doesn't exist, we just want to return.
+            # Alternatively, we could query the list of schemas before we start
+            # and skip listing the missing ones, which sounds expensive.
+            if 'Object does not exist' in str(exc):
+                return []
+            raise
+        relations = []
+        quote_policy = {
+            'database': True,
+            'schema': True,
+            'identifier': True
+        }
+
+        columns = ['DATABASE', 'SCHEMA', 'NAME', 'TYPE']
+        for _database, _schema, _identifier, _type in results.select(columns):
+            try:
+                _type = self.Relation.get_relation_type(_type.lower())
+            except ValueError:
+                _type = self.Relation.External
+            relations.append(self.Relation.create(
+                database=_database,
+                schema=_schema,
+                identifier=_identifier,
+                quote_policy=quote_policy,
+                type=_type
+            ))
+
+        return relations
 
     # set schema, database, and identifier to upper to match Netezza behavior
     def _make_match_kwargs(self, database: str, schema: str, identifier: str):
