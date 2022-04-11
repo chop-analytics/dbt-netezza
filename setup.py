@@ -19,7 +19,8 @@ setup(
         'dbt': [
             'include/netezza/dbt_project.yml',
             'include/netezza/macros/*.sql',
-            'include/netezza/macros/**/**/*.sql'
+            'include/netezza/macros/**/**/*.sql',
+            "include/netezza/macros/**/**/**/*.sql"
         ]
     },
     install_requires=[
