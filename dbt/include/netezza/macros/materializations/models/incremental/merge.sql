@@ -46,5 +46,5 @@
     when not matched then insert
     values
         ({{dest_cols_csv}})
-
+    ;
 {% endmacro %}

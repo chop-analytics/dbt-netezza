@@ -14,6 +14,16 @@
   {% do return(strategy) %}
 {% endmacro %}
 
+-- Adds semicolons as noted here: https://github.com/dbt-msft/dbt-sqlserver/blob/master/dbt/include/sqlserver/macros/materializations/models/incremental/merge.sql
+{% macro netezza__get_delete_insert_merge_sql(target, source, unique_key, dest_columns) %}
+  {{ default__get_delete_insert_merge_sql(target, source, unique_key, dest_columns) }};
+{% endmacro %}
+
+-- Adds semicolons as noted here: https://github.com/dbt-msft/dbt-sqlserver/blob/master/dbt/include/sqlserver/macros/materializations/models/incremental/merge.sql
+{% macro netezza__get_insert_overwrite_merge_sql(target, source, dest_columns, predicates, include_sql_header) %}
+  {{ default__get_insert_overwrite_merge_sql(target, source, dest_columns, predicates, include_sql_header) }};
+{% endmacro %}
+
 {% macro dbt_netezza_get_incremental_sql(strategy, tmp_relation, target_relation, unique_key, dest_columns) %}
   {% if strategy == 'merge' %}
     {% do return(get_merge_sql(target_relation, tmp_relation, unique_key, dest_columns)) %}
@@ -65,10 +75,27 @@
     {{ build_sql }}
   {%- endcall -%}
 
-  {{ run_hooks(post_hooks) }}
+  {% if need_swap %}
+      {% do adapter.rename_relation(target_relation, backup_relation) %}
+      {% do adapter.rename_relation(intermediate_relation, target_relation) %}
+  {% endif %}
 
-  {% set target_relation = target_relation.incorporate(type='table') %}
   {% do persist_docs(target_relation, model) %}
+
+  {% if existing_relation is none or existing_relation.is_view or should_full_refresh() %}
+    {% do create_indexes(target_relation) %}
+  {% endif %}
+
+  {{ run_hooks(post_hooks, inside_transaction=True) }}
+
+  -- `COMMIT` happens here
+  {% do adapter.commit() %}
+
+  {% for rel in to_drop %}
+      {% do adapter.drop_relation(rel) %}
+  {% endfor %}
+
+  {{ run_hooks(post_hooks, inside_transaction=False) }}
 
   {{ return({'relations': [target_relation]}) }}
 
