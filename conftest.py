@@ -3,7 +3,7 @@ import pytest
 import os
 
 # Import the dbt fixtures and custom dbt schema fixture
-pytest_plugins = ["dbt.tests.fixtures.project", "dbt_schema_fixture"]
+pytest_plugins = ["dbt.tests.fixtures.project", "tests.dbt_schema_fixture"]
 
 @pytest.fixture(scope="class")
 def dbt_profile_target():
