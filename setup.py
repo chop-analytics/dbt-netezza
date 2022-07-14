@@ -3,7 +3,7 @@ from setuptools import find_packages
 from distutils.core import setup
 
 package_name = "dbt-netezza"
-package_version = "0.6.1"
+package_version = "0.7.0"
 description = """The netezza adpter plugin for dbt (data build tool)"""
 
 setup(
@@ -19,7 +19,8 @@ setup(
         'dbt': [
             'include/netezza/dbt_project.yml',
             'include/netezza/macros/*.sql',
-            'include/netezza/macros/**/**/*.sql'
+            'include/netezza/macros/**/**/*.sql',
+            "include/netezza/macros/**/**/**/*.sql"
         ]
     },
     install_requires=[
