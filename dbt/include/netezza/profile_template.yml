@@ -1,0 +1,23 @@
+fixed:
+  type: netezza
+prompts:
+  host:
+    hint: 'hostname for the instance'
+  port:
+    default: 5480
+    type: 'int'
+  user:
+    hint: 'dev username'
+  password:
+    hint: 'dev password'
+    hide_input: true
+  database:
+    hint: 'default database that dbt will build objects in'
+  schema:
+    hint: 'default schema that dbt will build objects in'
+    default: ADMIN
+  threads:
+    hint: '1 or more'
+    type: 'int'
+    default: 8
+
