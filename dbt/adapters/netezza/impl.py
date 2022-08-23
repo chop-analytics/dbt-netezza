@@ -8,9 +8,7 @@ from dbt.adapters.netezza import NetezzaConnectionManager
 from dbt.adapters.base.impl import AdapterConfig
 from dbt.adapters.netezza.relation import NetezzaRelation
 from dbt.contracts.graph.manifest import Manifest
-from dbt.exceptions import (
-    get_relation_returned_multiple_results, DatabaseException
-)
+from dbt.exceptions import DatabaseException
 from dbt.utils import filter_null_values
 
 
@@ -38,7 +36,6 @@ class NetezzaAdapter(SQLAdapter):
         lowered = table.rename(
             column_names=[c.lower() for c in table.column_names]
         )
-
         return super()._catalog_filter_table(lowered, manifest)
 
     # Source: https://github.com/dbt-labs/dbt-snowflake/blob/fda11c2e822519996101d2c456a51570f4ed1c04/dbt/adapters/snowflake/impl.py#L56-L69
@@ -61,7 +58,7 @@ class NetezzaAdapter(SQLAdapter):
     def list_relations_without_caching(
             self, schema_relation: NetezzaRelation
     ) -> List[NetezzaRelation]:
-        kwargs = {'schema_relation': schema_relation}
+        kwargs = {"schema_relation": schema_relation}
         try:
             results = self.execute_macro(
                 LIST_RELATIONS_MACRO_NAME,
@@ -71,17 +68,18 @@ class NetezzaAdapter(SQLAdapter):
             # if the schema doesn't exist, we just want to return.
             # Alternatively, we could query the list of schemas before we start
             # and skip listing the missing ones, which sounds expensive.
-            if 'Object does not exist' in str(exc):
+            if "Object does not exist" in str(exc):
                 return []
             raise
+
         relations = []
         quote_policy = {
-            'database': True,
-            'schema': True,
-            'identifier': True
+            "database": True,
+            "schema": True,
+            "identifier": True
         }
 
-        columns = ['DATABASE', 'SCHEMA', 'NAME', 'TYPE']
+        columns = ["DATABASE", "SCHEMA", "NAME", "TYPE"]
         for _database, _schema, _identifier, _type in results.select(columns):
             try:
                 _type = self.Relation.get_relation_type(_type.lower())

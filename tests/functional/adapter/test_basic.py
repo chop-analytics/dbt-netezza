@@ -2,7 +2,9 @@ import pytest
 
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.adapter.basic.test_singular_tests import BaseSingularTests
-from dbt.tests.adapter.basic.test_singular_tests_ephemeral import BaseSingularTestsEphemeral
+from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
+    BaseSingularTestsEphemeral
+)
 from dbt.tests.adapter.basic.test_empty import BaseEmpty
 from dbt.tests.adapter.basic.test_ephemeral import BaseEphemeral
 from dbt.tests.adapter.basic.test_incremental import BaseIncremental
@@ -11,41 +13,42 @@ from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCo
 from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
 from dbt.tests.adapter.basic.test_adapter_methods import BaseAdapterMethod
 
-class TestSimpleMaterializationsMyAdapter(BaseSimpleMaterializations):
+
+class TestSimpleMaterializationsNetezza(BaseSimpleMaterializations):
     pass
 
 
-class TestSingularTestsMyAdapter(BaseSingularTests):
+class TestSingularTestsNetezza(BaseSingularTests):
     pass
 
 
-class TestSingularTestsEphemeralMyAdapter(BaseSingularTestsEphemeral):
+class TestSingularTestsEphemeralNetezza(BaseSingularTestsEphemeral):
     pass
 
 
-class TestEmptyMyAdapter(BaseEmpty):
+class TestEmptyNetezza(BaseEmpty):
     pass
 
 
-class TestEphemeralMyAdapter(BaseEphemeral):
+class TestEphemeralNetezza(BaseEphemeral):
     pass
 
 
-class TestIncrementalMyAdapter(BaseIncremental):
+class TestIncrementalNetezza(BaseIncremental):
     pass
 
 
-class TestGenericTestsMyAdapter(BaseGenericTests):
+class TestGenericTestsNetezza(BaseGenericTests):
     pass
 
 
-class TestSnapshotCheckColsMyAdapter(BaseSnapshotCheckCols):
+class TestSnapshotCheckColsNetezza(BaseSnapshotCheckCols):
     pass
 
 
-class TestSnapshotTimestampMyAdapter(BaseSnapshotTimestamp):
+class TestSnapshotTimestampNetezza(BaseSnapshotTimestamp):
     pass
 
 
-class TestBaseAdapterMethod(BaseAdapterMethod):
+class TestBaseAdapterMethodNetezza(BaseAdapterMethod):
     pass
