@@ -104,7 +104,10 @@ class NetezzaAdapter(SQLAdapter):
         # source: https://github.com/fishtown-analytics/dbt/pull/2255/files#diff-39545f1198b754f67de59957630a527b6d1df026aff22cc90de923f5653d5ad8
         lens = [len(d.encode("utf-8")) for d in column.values_without_nulls()]
         max_len = max(lens) if lens else 64
-        return f'varchar({max_len})'
+
+    @classmethod
+    def convert_datetime_type(cls, agate_table: agate.Table, col_idx: int) -> str:
+        return "timestamp"
 
     # Netezza does not support `drop view if exists`, so it is necessary
     # to check if the view exists before dropping
