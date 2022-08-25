@@ -69,14 +69,14 @@ class NetezzaConnectionManager(connection_cls):
             yield
 
         except pyodbc.DatabaseError as e:
-            logger.error("Netezza error: %s", e)
+            logger.error(f"Netezza error: {e}")
             try:
                 self.rollback_if_open()
             except pyodbc.DatabaseError:
                 logger.error("Failed to release connection!")
 
         except Exception as e:
-            logger.error("Error running SQL: %s", sql)
+            logger.error(f"Error running SQL: {sql}")
             logger.error("Rolling back transaction.")
             self.rollback_if_open()
             if isinstance(e, dbt.exceptions.RuntimeException):
@@ -125,7 +125,7 @@ class NetezzaConnectionManager(connection_cls):
             connection.handle = handle
         except Exception as e:
             logger.error("Got an error when attempting to open a netezza "
-                         "connection '%s'", e)
+                         f"connection '{e}'")
             connection.state = "fail"
             connection.handle = None
             raise dbt.exceptions.FailedToConnectException() from e
