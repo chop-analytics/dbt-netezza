@@ -24,7 +24,7 @@ class NetezzaAdapter(SQLAdapter):
 
     @classmethod
     def date_function(cls):
-        return 'now()'
+        return "now()"
 
     # Overriding methods because Netezza uppercases by default
     # and we want to avoid quoting of columns
@@ -33,9 +33,7 @@ class NetezzaAdapter(SQLAdapter):
     def _catalog_filter_table(
         cls, table: agate.Table, manifest: Manifest
     ) -> agate.Table:
-        lowered = table.rename(
-            column_names=[c.lower() for c in table.column_names]
-        )
+        lowered = table.rename(column_names=[c.lower() for c in table.column_names])
         return super()._catalog_filter_table(lowered, manifest)
 
     # Source: https://github.com/dbt-labs/dbt-snowflake/blob/fda11c2e822519996101d2c456a51570f4ed1c04/dbt/adapters/snowflake/impl.py#L56-L69
@@ -56,14 +54,11 @@ class NetezzaAdapter(SQLAdapter):
 
     # Source: https://github.com/dbt-labs/dbt-snowflake/blob/fda11c2e822519996101d2c456a51570f4ed1c04/dbt/adapters/snowflake/impl.py#L128-L166
     def list_relations_without_caching(
-            self, schema_relation: NetezzaRelation
+        self, schema_relation: NetezzaRelation
     ) -> List[NetezzaRelation]:
         kwargs = {"schema_relation": schema_relation}
         try:
-            results = self.execute_macro(
-                LIST_RELATIONS_MACRO_NAME,
-                kwargs=kwargs
-            )
+            results = self.execute_macro(LIST_RELATIONS_MACRO_NAME, kwargs=kwargs)
         except DatabaseException as exc:
             # if the schema doesn't exist, we just want to return.
             # Alternatively, we could query the list of schemas before we start
@@ -73,11 +68,7 @@ class NetezzaAdapter(SQLAdapter):
             raise
 
         relations = []
-        quote_policy = {
-            "database": True,
-            "schema": True,
-            "identifier": True
-        }
+        quote_policy = {"database": True, "schema": True, "identifier": True}
 
         columns = ["DATABASE", "SCHEMA", "NAME", "TYPE"]
         for _database, _schema, _identifier, _type in results.select(columns):
@@ -85,13 +76,15 @@ class NetezzaAdapter(SQLAdapter):
                 _type = self.Relation.get_relation_type(_type.lower())
             except ValueError:
                 _type = self.Relation.External
-            relations.append(self.Relation.create(
-                database=_database,
-                schema=_schema,
-                identifier=_identifier,
-                quote_policy=quote_policy,
-                type=_type
-            ))
+            relations.append(
+                self.Relation.create(
+                    database=_database,
+                    schema=_schema,
+                    identifier=_identifier,
+                    quote_policy=quote_policy,
+                    type=_type,
+                )
+            )
 
         return relations
 
@@ -104,6 +97,7 @@ class NetezzaAdapter(SQLAdapter):
         # source: https://github.com/fishtown-analytics/dbt/pull/2255/files#diff-39545f1198b754f67de59957630a527b6d1df026aff22cc90de923f5653d5ad8
         lens = [len(d.encode("utf-8")) for d in column.values_without_nulls()]
         max_len = max(lens) if lens else 64
+        return f"varchar({max_len})"
 
     @classmethod
     def convert_datetime_type(cls, agate_table: agate.Table, col_idx: int) -> str:
@@ -112,13 +106,17 @@ class NetezzaAdapter(SQLAdapter):
     # Netezza does not support `drop view if exists`, so it is necessary
     # to check if the view exists before dropping
     def drop_relation(self, relation):
-        if relation.type == 'view':
+        if relation.type == "view":
             identifier = relation.identifier.upper()
             relations = self.list_relations_without_caching(relation)
-            no_relation_exists = next(
-                rel for rel in relations
-                if rel.type == 'view' and rel.identifier == identifier
-            ) is None
+            no_relation_exists = (
+                next(
+                    rel
+                    for rel in relations
+                    if rel.type == "view" and rel.identifier == identifier
+                )
+                is None
+            )
 
             if no_relation_exists:
                 return
