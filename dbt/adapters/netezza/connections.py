@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
+from re import L
 from typing import Optional, Tuple, Any
 import time
 from dataclasses import dataclass
@@ -24,17 +25,14 @@ class NetezzaCredentials(Credentials):
     Defines database specific credentials that get added to
     profiles.yml to connect to new adapter
     """
+
     host: str
     username: str
     password: str
     port: Port = Port(5480)
     dsn: Optional[str] = None
 
-    _ALIASES = {
-        "dbname": "database",
-        "user": "username",
-        "pass": "password"
-    }
+    _ALIASES = {"dbname": "database", "user": "username", "pass": "password"}
 
     @property
     def type(self):
@@ -53,7 +51,11 @@ class NetezzaCredentials(Credentials):
         """
         List of keys to display in the `dbt debug` output.
         """
-        return ("dsn", "username") if self.dsn else ("host", "port", "database", "schema", "username")
+        return (
+            ("dsn", "username")
+            if self.dsn
+            else ("host", "port", "database", "schema", "username")
+        )
 
 
 class NetezzaConnectionManager(connection_cls):
@@ -102,9 +104,7 @@ class NetezzaConnectionManager(connection_cls):
         try:
             connection_args = {}
             if credentials.dsn:
-                connection_args = {
-                    "DSN": credentials.dsn
-                }
+                connection_args = {"DSN": credentials.dsn}
             else:
                 connection_args = {
                     "DRIVER": "NetezzaSQL",
@@ -118,14 +118,15 @@ class NetezzaConnectionManager(connection_cls):
                 UID=credentials.username,
                 PWD=credentials.password,
                 autocommit=True,
-                **connection_args
+                **connection_args,
             )
 
             connection.state = "open"
             connection.handle = handle
         except Exception as e:
-            logger.error("Got an error when attempting to open a netezza "
-                         f"connection '{e}'")
+            logger.error(
+                f"Got an error when attempting to open a netezza connection '{e}'"
+            )
             connection.state = "fail"
             connection.handle = None
             raise dbt.exceptions.FailedToConnectException() from e
@@ -139,15 +140,16 @@ class NetezzaConnectionManager(connection_cls):
         that has items such as code, rows_affected, etc. can also just be a string ex. "OK"
         if your cursor does not offer rich metadata.
         """
-        # TODO Implement if odbc cursor provides status
-        return "ok"
+        if not len(cursor.messages):
+            return "OK"
+        last_code, last_message = cursor.messages[-1]
+        return AdapterResponse(last_message, last_code, cursor.rowcount)
 
     def cancel(self, connection):
         """
         Gets a connection object and attempts to cancel any ongoing queries.
         """
-        # TODO Implement
-        pass
+        connection.handle.close()
 
     def add_query(
         self,
@@ -180,7 +182,8 @@ class NetezzaConnectionManager(connection_cls):
 
             fire_event(
                 SQLQueryStatus(
-                    status=str(self.get_response(cursor)), elapsed=round((time.time() - pre), 2)
+                    status=str(self.get_response(cursor)),
+                    elapsed=round((time.time() - pre), 2),
                 )
             )
 

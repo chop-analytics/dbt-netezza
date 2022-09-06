@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dbt.adapters.base.relation import BaseRelation, Policy
 
+
 @dataclass
 class NetezzaQuotePolicy(Policy):
     database: bool = False

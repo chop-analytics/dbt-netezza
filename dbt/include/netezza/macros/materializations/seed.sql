@@ -2,7 +2,7 @@
     {% set cols_sql = get_seed_column_quoted_csv(model, agate_table.column_names) %}
     {% set bindings = [] %}
 
-    {% set temp = '/tmp/'~ this.render() ~ '.csv' %}
+    {% set temp = '/tmp/' ~ this.render() ~ '.csv' %}
     {{ agate_table.to_csv(temp) }}
 
     {% set sql %}
@@ -20,10 +20,11 @@
             TIMEDELIM ':'
             QUOTEDVALUE Double
             CTRLCHARS True
+            DATETIMEDELIM 'T'
         )
     {% endset %} 
 
-    {{ adapter.add_query(sql, bindings=[], abridge_sql_log=True) }}
+    {{ adapter.add_query(sql, bindings=bindings, abridge_sql_log=True) }}
 
     {# Return SQL so we can render it out into the compiled files #}
     {{ return(sql) }}

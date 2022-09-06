@@ -1,4 +1,4 @@
-# Override the dbt project fixture to prevent schema creation and deletion for Netezza 
+# Override the dbt project fixture to prevent schema creation and deletion for Netezza
 # instances without schemas enabled
 # Source: https://docs.getdbt.com/docs/contributing/testing-a-new-adapter
 import os
@@ -6,25 +6,13 @@ import pytest  # type: ignore
 import warnings
 
 from dbt.events.functions import setup_event_logger
-from dbt.tests.fixtures.project import (
-    project_root,
-    profiles_root,
-    profiles_yml,
-    dbt_project_yml,
-    packages_yml,
-    selectors_yml,
-    adapter,
-    project_files,
-    shared_data_dir,
-    test_data_dir,
-    logs_dir,
-    test_config,
-    TestProjInfo
-)
+from dbt.tests.fixtures.project import TestProjInfo
+
 
 @pytest.fixture(scope="class")
 def unique_schema(request, prefix) -> str:
-    return os.getenv('DBT_TEST_NZ_SCHEMA')
+    return os.getenv("DBT_TEST_NZ_SCHEMA", "ADMIN")
+
 
 @pytest.fixture(scope="class")
 def project(

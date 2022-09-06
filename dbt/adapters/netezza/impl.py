@@ -6,9 +6,10 @@ from dbt.adapters.sql import SQLAdapter
 from dbt.adapters.sql.impl import LIST_RELATIONS_MACRO_NAME
 from dbt.adapters.netezza import NetezzaConnectionManager
 from dbt.adapters.base.impl import AdapterConfig
+from dbt.adapters.base.meta import available
 from dbt.adapters.netezza.relation import NetezzaRelation
 from dbt.contracts.graph.manifest import Manifest
-from dbt.exceptions import DatabaseException
+from dbt.exceptions import DatabaseException, raise_compiler_error
 from dbt.utils import filter_null_values
 
 
@@ -88,6 +89,7 @@ class NetezzaAdapter(SQLAdapter):
 
         return relations
 
+    # Override with Redshift implementation because Netezza does not support `text`
     # Source: https://github.com/dbt-labs/dbt-redshift/blob/64f6f7ba4f8fbe11d9c547f7c07faeb9b14deb83/dbt/adapters/redshift/impl.py#L54-L61
     @classmethod
     def convert_text_type(cls, agate_table, col_idx):
@@ -99,12 +101,13 @@ class NetezzaAdapter(SQLAdapter):
         max_len = max(lens) if lens else 64
         return f"varchar({max_len})"
 
+    # Override to remove `without time zone` because Netezza does not support this
     @classmethod
     def convert_datetime_type(cls, agate_table: agate.Table, col_idx: int) -> str:
         return "timestamp"
 
-    # Netezza does not support `drop view if exists`, so it is necessary
-    # to check if the view exists before dropping
+    # Override to check if view exists before dropping because Netezza does not support
+    # `drop view if exists`
     def drop_relation(self, relation):
         if relation.type == "view":
             identifier = relation.identifier.upper()
@@ -122,3 +125,49 @@ class NetezzaAdapter(SQLAdapter):
                 return
 
         super().drop_relation(relation)
+
+    # Override to skip the cursor.commit() which causes a ODBC HY010
+    # "function sequence error"
+    # Source: https://github.com/dbt-labs/dbt-core/blob/c270a77552ae9fc66fdfab359d65a8db1307c3f3/core/dbt/adapters/sql/impl.py#L223-L243
+    def run_sql_for_tests(self, sql, fetch, conn):
+        cursor = conn.handle.cursor()
+        try:
+            cursor.execute(sql)
+            if hasattr(conn.handle, "commit"):
+                # Skip cursor.commit()
+                pass
+            if fetch == "one":
+                return cursor.fetchone()
+            elif fetch == "all":
+                return cursor.fetchall()
+            else:
+                return
+        except BaseException as e:
+            if conn.handle and not getattr(conn.handle, "closed", True):
+                conn.handle.rollback()
+            print(sql)
+            print(e)
+            raise
+        finally:
+            conn.transaction_open = False
+
+    # Override to change the default value of quote_columns to False
+    # Source: https://github.com/dbt-labs/dbt-core/blob/7f8d9a7af976f640e376900773a0d793acf3a3ce/core/dbt/adapters/base/impl.py#L812-L828
+    @available
+    def quote_seed_column(self, column: str, quote_config: Optional[bool]) -> str:
+        # Change default value to False
+        quote_columns: bool = False
+        if isinstance(quote_config, bool):
+            quote_columns = quote_config
+        elif quote_config is None:
+            pass
+        else:
+            raise_compiler_error(
+                f'The seed configuration value of "quote_columns" has an '
+                f"invalid type {type(quote_config)}"
+            )
+
+        if quote_columns:
+            return self.quote(column)
+        else:
+            return column
