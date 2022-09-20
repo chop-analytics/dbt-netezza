@@ -7,6 +7,7 @@ from dbt.adapters.sql.impl import LIST_RELATIONS_MACRO_NAME
 from dbt.adapters.netezza import NetezzaConnectionManager
 from dbt.adapters.base.impl import AdapterConfig
 from dbt.adapters.base.meta import available
+from dbt.adapters.base.relation import BaseRelation
 from dbt.adapters.netezza.relation import NetezzaRelation
 from dbt.contracts.graph.manifest import Manifest
 from dbt.exceptions import DatabaseException, raise_compiler_error
@@ -55,8 +56,8 @@ class NetezzaAdapter(SQLAdapter):
 
     # Source: https://github.com/dbt-labs/dbt-snowflake/blob/fda11c2e822519996101d2c456a51570f4ed1c04/dbt/adapters/snowflake/impl.py#L128-L166
     def list_relations_without_caching(
-        self, schema_relation: NetezzaRelation
-    ) -> List[NetezzaRelation]:
+        self, schema_relation: BaseRelation
+    ) -> List[BaseRelation]:
         kwargs = {"schema_relation": schema_relation}
         try:
             results = self.execute_macro(LIST_RELATIONS_MACRO_NAME, kwargs=kwargs)
@@ -68,7 +69,7 @@ class NetezzaAdapter(SQLAdapter):
                 return []
             raise
 
-        relations = []
+        relations: List[BaseRelation] = []
         quote_policy = {"database": True, "schema": True, "identifier": True}
 
         columns = ["DATABASE", "SCHEMA", "NAME", "TYPE"]

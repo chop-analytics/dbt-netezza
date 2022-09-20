@@ -141,7 +141,7 @@ class NetezzaConnectionManager(connection_cls):
         if your cursor does not offer rich metadata.
         """
         if not len(cursor.messages):
-            return "OK"
+            return AdapterResponse("OK")
         last_code, last_message = cursor.messages[-1]
         return AdapterResponse(last_message, last_code, cursor.rowcount)
 
