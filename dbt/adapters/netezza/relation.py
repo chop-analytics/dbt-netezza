@@ -12,3 +12,8 @@ class NetezzaQuotePolicy(Policy):
 @dataclass(frozen=True, eq=False, repr=False)
 class NetezzaRelation(BaseRelation):
     quote_policy: NetezzaQuotePolicy = NetezzaQuotePolicy()
+
+    @staticmethod
+    def add_ephemeral_prefix(name: str):
+        # Netezza reserves '_' name prefix for system catalogs
+        return f"dbt__cte__{name}"
