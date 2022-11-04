@@ -1,13 +1,11 @@
 {% macro netezza__load_csv_rows(model, agate_table) %}
     {% set cols_sql = get_seed_column_quoted_csv(model, agate_table.column_names) %}
     {% set bindings = [] %}
-
-    {% set temp = '/tmp/' ~ this.render() ~ '.csv' %}
-    {{ agate_table.to_csv(temp) }}
+    {% set filepath = model['root_path'] + model['root_path'][0] + model['original_file_path'] %}
 
     {% set sql %}
         insert into {{ this.render() }} ({{ cols_sql }})
-        select * from external '{{ temp }}'
+        select * from external '{{ filepath }}'
         using (
             REMOTESOURCE 'ODBC'
             NULLVALUE ''
