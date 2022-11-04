@@ -3,7 +3,7 @@ from setuptools import find_namespace_packages, setup
 
 package_name = "dbt-netezza"
 # make sure this always matches dbt/adapters/{adapter}/__version__.py
-package_version = "1.1.1"
+package_version = "1.2.0"
 description = """The Netezza adapter plugin for dbt"""
 
 setup(
