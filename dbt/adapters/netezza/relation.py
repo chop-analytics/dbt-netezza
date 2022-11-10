@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+
 from dbt.adapters.base.relation import BaseRelation, Policy
+from dbt.contracts.relation import ComponentName
 
 
 @dataclass
@@ -12,6 +14,14 @@ class NetezzaQuotePolicy(Policy):
 @dataclass(frozen=True, eq=False, repr=False)
 class NetezzaRelation(BaseRelation):
     quote_policy: NetezzaQuotePolicy = NetezzaQuotePolicy()
+
+    def _is_exactish_match(self, field: ComponentName, value: str) -> bool:
+        # Remove requirement for dbt_created due to dbt bug with cache preservation
+        # of that property
+        if self.quote_policy.get_part(field) is False:
+            return self.path.get_lowered_part(field) == value.lower()
+        else:
+            return self.path.get_part(field) == value
 
     @staticmethod
     def add_ephemeral_prefix(name: str):
