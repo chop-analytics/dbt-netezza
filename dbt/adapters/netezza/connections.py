@@ -140,10 +140,7 @@ class NetezzaConnectionManager(connection_cls):
         that has items such as code, rows_affected, etc. can also just be a string ex. "OK"
         if your cursor does not offer rich metadata.
         """
-        if not len(cursor.messages):
-            return "OK"
-        last_code, last_message = cursor.messages[-1]
-        return AdapterResponse(last_message, last_code, cursor.rowcount)
+        return AdapterResponse(_message=f"SUCCESS {cursor.rowcount}", code="SUCCESS", rows_affected=cursor.rowcount)
 
     def cancel(self, connection):
         """
