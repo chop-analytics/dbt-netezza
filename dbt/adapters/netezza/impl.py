@@ -10,7 +10,7 @@ from dbt.adapters.base.meta import available
 from dbt.adapters.base.relation import BaseRelation
 from dbt.adapters.netezza.relation import NetezzaRelation
 from dbt.contracts.graph.manifest import Manifest
-from dbt.exceptions import DatabaseException, raise_compiler_error
+from dbt.exceptions import CompilationException, DatabaseException
 from dbt.utils import filter_null_values
 
 
@@ -163,7 +163,7 @@ class NetezzaAdapter(SQLAdapter):
         elif quote_config is None:
             pass
         else:
-            raise_compiler_error(
+            raise CompilationException(
                 f'The seed configuration value of "quote_columns" has an '
                 f"invalid type {type(quote_config)}"
             )

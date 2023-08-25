@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from typing import Optional
 
-import dbt.exceptions
+from dbt.exceptions import RuntimeException, FailedToConnectException
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager as connection_cls
 from dbt.events import AdapterLogger
@@ -81,13 +81,13 @@ class NetezzaConnectionManager(connection_cls):
             logger.error(f"Error running SQL: {sql}")
             logger.error("Rolling back transaction.")
             self.rollback_if_open()
-            if isinstance(e, dbt.exceptions.RuntimeException):
+            if isinstance(e, RuntimeException):
                 # during a sql query, an internal to dbt exception was raised.
                 # this sounds a lot like a signal handler and probably has
                 # useful information, so raise it without modification.
                 raise
 
-            raise dbt.exceptions.RuntimeException(e) from e
+            raise RuntimeException(str(e)) from e
 
     @classmethod
     def open(cls, connection):
@@ -129,7 +129,7 @@ class NetezzaConnectionManager(connection_cls):
             )
             connection.state = "fail"
             connection.handle = None
-            raise dbt.exceptions.FailedToConnectException() from e
+            raise FailedToConnectException() from e
         return connection
 
     @classmethod
