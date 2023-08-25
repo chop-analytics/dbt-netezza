@@ -1,5 +1,5 @@
 {# string  -------------------------------------------------     #}
 
 {%- macro netezza__type_string() -%}
-    text
+    varchar(2000)
 {%- endmacro -%}
