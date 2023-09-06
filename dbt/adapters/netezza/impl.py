@@ -1,6 +1,6 @@
 import agate
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from dbt.adapters.sql import SQLAdapter
 from dbt.adapters.sql.impl import LIST_RELATIONS_MACRO_NAME
@@ -172,3 +172,16 @@ class NetezzaAdapter(SQLAdapter):
             return self.quote(column)
         else:
             return column
+
+    # Override to search for uppercase keys in grants_table because Netezza always returns
+    # uppercase keys and agate.Table.__get_item__ is case-sensitive
+    def standardize_grants_dict(self, grants_table: agate.Table) -> dict:
+        grants_dict: Dict[str, List[str]] = {}
+        for row in grants_table:
+            grantee = row["GRANTEE"]
+            privilege = row["PRIVILEGE_TYPE"]
+            if privilege in grants_dict.keys():
+                grants_dict[privilege].append(grantee)
+            else:
+                grants_dict.update({privilege: [grantee]})
+        return grants_dict

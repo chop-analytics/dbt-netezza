@@ -38,10 +38,15 @@
    
   {%- set unique_key = config.get('unique_key') -%}
 
+  {#-- load grants config, if it exists --#}
+  {% set grant_config = config.get('grants') %}
+  
   {% set target_relation = this.incorporate(type='table') %}
   {% set existing_relation = load_relation(this) %}
   {% set tmp_relation = make_temp_relation(target_relation) %}
   {%- set full_refresh_mode = (should_full_refresh()) -%}
+
+  {% set should_revoke = should_revoke(existing_relation, full_refresh_mode) %}
 
   {% set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') %}
   {#-- Validate early so we don't run SQL if the strategy is invalid --#}
@@ -110,6 +115,10 @@
   {% endif %}
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
+
+  {% if grant_config %}
+    {% do apply_grants(target_relation, grant_config, should_revoke) %}
+  {% endif %}
 
   -- `COMMIT` happens here
   {% do adapter.commit() %}
