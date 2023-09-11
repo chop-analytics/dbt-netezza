@@ -55,10 +55,7 @@ class TestSnapshotTimestampNetezza(BaseSnapshotTimestamp):
 class TestBaseAdapterMethodNetezza(BaseAdapterMethod):
     def test_adapter_methods(self, project, equal_tables):
         with pytest.raises(RuntimeError):
-            run_dbt(["compile"])  # trigger any compile-time issues
-            result = run_dbt()
-            assert len(result) == 3
-            check_relations_equal(project.adapter, equal_tables)
+            BaseAdapterMethod.test_adapter_methods(self, project, equal_tables)
     pass
 
 
