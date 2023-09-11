@@ -1,3 +1,4 @@
+import pytest
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.adapter.basic.test_singular_tests import BaseSingularTests
 from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
@@ -12,6 +13,7 @@ from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestam
 from dbt.tests.adapter.basic.test_adapter_methods import BaseAdapterMethod
 from dbt.tests.adapter.basic.test_docs_generate import BaseDocsGenerate
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
+from dbt.tests.util import run_dbt, check_relations_equal
 
 
 class TestSimpleMaterializationsNetezza(BaseSimpleMaterializations):
@@ -51,6 +53,12 @@ class TestSnapshotTimestampNetezza(BaseSnapshotTimestamp):
 
 
 class TestBaseAdapterMethodNetezza(BaseAdapterMethod):
+    def test_adapter_methods(self, project, equal_tables):
+        with pytest.raises(RuntimeError):
+            run_dbt(["compile"])  # trigger any compile-time issues
+            result = run_dbt()
+            assert len(result) == 3
+            check_relations_equal(project.adapter, equal_tables)
     pass
 
 
