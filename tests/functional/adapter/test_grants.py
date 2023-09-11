@@ -127,6 +127,11 @@ class TestIncrementalGrantsNetezza(BaseIncrementalGrants):
             with pytest.raises(RuntimeError):
                 adapter.drop_schema(relation)
 
+        # NOTE: The following component of the test as assumes that state has
+        # changed due to the above DROP SCHEMA statement; since Netezza does not
+        # support that statement and it therefore never runs, state is identical
+        # and subsequent test will not actually test anything
+
         # Incremental materialization, same config, rebuild now that table is missing
         # (results, log_output) = run_dbt_and_capture(["--debug", "run"])
         # assert len(results) == 1
