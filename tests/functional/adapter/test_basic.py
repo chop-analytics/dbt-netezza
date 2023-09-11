@@ -13,7 +13,6 @@ from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestam
 from dbt.tests.adapter.basic.test_adapter_methods import BaseAdapterMethod
 from dbt.tests.adapter.basic.test_docs_generate import BaseDocsGenerate
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
-from dbt.tests.util import run_dbt, check_relations_equal
 
 
 class TestSimpleMaterializationsNetezza(BaseSimpleMaterializations):
