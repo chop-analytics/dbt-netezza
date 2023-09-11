@@ -1,12 +1,11 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
-from re import L
 from typing import Optional, Tuple, Any
 import time
 from dataclasses import dataclass
 from typing import Optional
 
-from dbt.exceptions import RuntimeException, FailedToConnectException
+from dbt.exceptions import RuntimeException
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager as connection_cls
 from dbt.events import AdapterLogger
@@ -26,11 +25,14 @@ class NetezzaCredentials(Credentials):
     profiles.yml to connect to new adapter
     """
 
-    host: str
-    username: str
-    password: str
-    port: Port = Port(5480)
     dsn: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    database: Optional[str] = None
+    schema: Optional[str] = None
+    host: Optional[str] = None
+    port: Port = Port(5480)
+    retries: int = 1
 
     _ALIASES = {"dbname": "database", "user": "username", "pass": "password"}
 
@@ -71,15 +73,15 @@ class NetezzaConnectionManager(connection_cls):
             yield
 
         except pyodbc.DatabaseError as e:
-            logger.error(f"Netezza error: {e}")
+            logger.debug("Netezza error: {}", e)
             try:
                 self.rollback_if_open()
             except pyodbc.DatabaseError:
                 logger.error("Failed to release connection!")
 
         except Exception as e:
-            logger.error(f"Error running SQL: {sql}")
-            logger.error("Rolling back transaction.")
+            logger.debug("Error running SQL: {}", sql)
+            logger.debug("Rolling back transaction.")
             self.rollback_if_open()
             if isinstance(e, RuntimeException):
                 # during a sql query, an internal to dbt exception was raised.
@@ -99,38 +101,50 @@ class NetezzaConnectionManager(connection_cls):
             logger.debug("Connection is already open, skipping open.")
             return connection
 
-        credentials = connection.credentials
+        credentials = cls.get_credentials(connection.credentials)
 
-        try:
-            connection_args = {}
-            if credentials.dsn:
-                connection_args = {"DSN": credentials.dsn}
-            else:
-                connection_args = {
-                    "DRIVER": "NetezzaSQL",
-                    "SERVER": credentials.host,
-                    "PORT": credentials.port,
-                    "DATABASE": credentials.database,
-                    "SCHEMA": credentials.schema,
-                }
+        connection_args = {}
+        if credentials.dsn:
+            connection_args = {"DSN": credentials.dsn}
+        else:
+            connection_args = {
+                "DRIVER": "NetezzaSQL",
+                "SERVER": credentials.host,
+                "PORT": credentials.port,
+                "DATABASE": credentials.database,
+                "SCHEMA": credentials.schema,
+            }
 
+        def connect():
             handle = pyodbc.connect(
                 UID=credentials.username,
                 PWD=credentials.password,
                 autocommit=True,
                 **connection_args,
             )
+            return handle
 
-            connection.state = "open"
-            connection.handle = handle
-        except Exception as e:
-            logger.error(
-                f"Got an error when attempting to open a netezza connection '{e}'"
-            )
-            connection.state = "fail"
-            connection.handle = None
-            raise FailedToConnectException() from e
-        return connection
+        retryable_exceptions = [
+            pyodbc.OperationalError,
+        ]
+
+        return cls.retry_connection(
+            connection,
+            connect=connect,
+            logger=logger,
+            retry_limit=credentials.retries,
+            retryable_exceptions=retryable_exceptions,
+        )
+
+    def cancel(self, connection):
+        """
+        Gets a connection object and attempts to cancel any ongoing queries.
+        """
+        connection.handle.close()
+
+    @classmethod
+    def get_credentials(cls, credentials):
+        return credentials
 
     @classmethod
     def get_response(cls, cursor) -> AdapterResponse:
@@ -144,12 +158,6 @@ class NetezzaConnectionManager(connection_cls):
             return AdapterResponse("OK")
         last_code, last_message = cursor.messages[-1]
         return AdapterResponse(last_message, last_code, cursor.rowcount)
-
-    def cancel(self, connection):
-        """
-        Gets a connection object and attempts to cancel any ongoing queries.
-        """
-        connection.handle.close()
 
     def add_query(
         self,
