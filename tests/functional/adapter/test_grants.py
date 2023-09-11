@@ -21,7 +21,11 @@ from dbt.tests.adapter.grants.test_snapshot_grants import BaseSnapshotGrants
 
 
 class TestInvalidGrantsNetezza(BaseInvalidGrants):
-    pass
+    def grantee_does_not_exist_error(self):
+        return "ProcessObjectPrivileges: group/user"
+
+    def privilege_does_not_exist_error(self):
+        return r"expecting `ALL\' or `ALTER\' or `CREATE\' or `DELETE\' or `DROP\'"
 
 
 class TestModelGrantsNetezza(BaseModelGrants):
