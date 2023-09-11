@@ -46,8 +46,6 @@
   {% set tmp_relation = make_temp_relation(target_relation) %}
   {%- set full_refresh_mode = (should_full_refresh()) -%}
 
-  {% set should_revoke = should_revoke(existing_relation, full_refresh_mode) %}
-
   {% set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') %}
   {#-- Validate early so we don't run SQL if the strategy is invalid --#}
   {% set strategy = dbt_netezza_validate_get_incremental_strategy(config) -%}
@@ -115,7 +113,8 @@
   {% endif %}
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
-
+  
+  {% set should_revoke = should_revoke(existing_relation, full_refresh_mode) %}
   {% if grant_config %}
     {% do apply_grants(target_relation, grant_config, should_revoke) %}
   {% endif %}
