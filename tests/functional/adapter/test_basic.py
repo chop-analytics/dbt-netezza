@@ -58,5 +58,5 @@ class TestDocsGenerateNetezza(BaseDocsGenerate):
     pass
 
 
-#class TestValidateConnectionNetezza(BaseValidateConnection):
-#    pass
+class TestValidateConnectionNetezza(BaseValidateConnection):
+    pass
