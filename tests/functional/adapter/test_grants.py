@@ -36,9 +36,5 @@ class TestSeedGrantsNetezza(BaseSeedGrants):
     pass
 
 
-class TestSeedCopyGrantsNetezza(BaseSeedGrants):
-    pass
-
-
 class TestSnapshotGrants(BaseSnapshotGrants):
     pass
