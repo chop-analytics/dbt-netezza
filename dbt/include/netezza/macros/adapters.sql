@@ -63,6 +63,12 @@
   {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
 
+{% macro netezza__drop_schema(relation) -%}
+  {%- call statement('drop_schema') -%}
+    {{ exceptions.raise_compiler_error("dbt-netezza does not support drop_schema") }}
+  {% endcall %}
+{% endmacro %}
+
 {% macro netezza__drop_relation(relation) -%}
   {% call statement('drop_relation', auto_begin=False) -%}
     {% if relation.type == 'view' %}
