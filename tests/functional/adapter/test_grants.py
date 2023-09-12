@@ -66,6 +66,7 @@ class TestModelGrantsNetezza(BaseModelGrants):
 
 
 class TestIncrementalGrantsNetezza(BaseIncrementalGrants):
+    # override due to DROP SCHEMA statement, which is not supported by Netezza
     def test_incremental_grants(self, project, get_test_users):
         # we want the test to fail, not silently skip
         test_users = get_test_users
