@@ -54,7 +54,7 @@ class TestSnapshotTimestampNetezza(BaseSnapshotTimestamp):
 class TestBaseAdapterMethodNetezza(BaseAdapterMethod):
     def test_adapter_methods(self, project, equal_tables):
         with pytest.raises(RuntimeError, match="does not support"):
-            BaseAdapterMethod.test_adapter_methods(self, project, equal_tables)
+            super().test_adapter_methods(project, equal_tables)
 
 
 class TestDocsGenerateNetezza(BaseDocsGenerate):
