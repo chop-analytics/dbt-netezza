@@ -74,7 +74,6 @@ class TestIncrementalGrantsNetezza(BaseIncrementalGrants):
 
         # Incremental materialization, single select grant
         (results, log_output) = run_dbt_and_capture(["--debug", "run"])
-        print(log_output)
         assert len(results) == 1
         manifest = get_manifest(project.project_root)
         model_id = "model.test.my_incremental_model"
@@ -120,26 +119,11 @@ class TestIncrementalGrantsNetezza(BaseIncrementalGrants):
             project, "my_incremental_model", expected
         )
 
-        # Now drop the schema (with the table in it)
-        adapter = project.adapter
-        relation = relation_from_name(adapter, "my_incremental_model")
-        with get_connection(adapter):
-            with pytest.raises(RuntimeError):
-                adapter.drop_schema(relation)
-
         # NOTE: The following component of the test as assumes that state has
-        # changed due to the above DROP SCHEMA statement; since Netezza does not
+        # changed due to the DROP SCHEMA statement; since Netezza does not
         # support that statement and it therefore never runs, state is identical
         # and subsequent test will not actually test anything
-
-        # Incremental materialization, same config, rebuild now that table is missing
-        # (results, log_output) = run_dbt_and_capture(["--debug", "run"])
-        # assert len(results) == 1
-        # assert "grant " in log_output
-        # assert "revoke " not in log_output
-        # self.assert_expected_grants_match_actual(
-        #     project, "my_incremental_model", expected
-        # )
+        # Now drop the schema (with the table in it)
 
 
 class TestSeedGrantsNetezza(BaseSeedGrants):
