@@ -120,11 +120,10 @@ class TestIncrementalGrantsNetezza(BaseIncrementalGrants):
             project, "my_incremental_model", expected
         )
 
-        # NOTE: The following component of the test as assumes that state has
-        # changed due to the DROP SCHEMA statement; since Netezza does not
+        # NOTE: The last component of the test assumes that state has
+        # changed due to a DROP SCHEMA statement; since Netezza does not
         # support that statement and it therefore never runs, state is identical
         # and subsequent test will not actually test anything
-        # Now drop the schema (with the table in it)
 
 
 class TestSeedGrantsNetezza(BaseSeedGrants):
