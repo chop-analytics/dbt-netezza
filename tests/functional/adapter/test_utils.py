@@ -1,11 +1,17 @@
 import pytest
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
+from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
+from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
+from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd, seeds__data_dateadd_csv
 from dbt.tests.adapter.utils.test_datediff import BaseDateDiff, seeds__data_datediff_csv
-from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc, seeds__data_date_trunc_csv
+from dbt.tests.adapter.utils.test_date_trunc import (
+    BaseDateTrunc,
+    seeds__data_date_trunc_csv,
+)
 from dbt.tests.adapter.utils.test_escape_single_quotes import (
     BaseEscapeSingleQuotesQuote,
 )
@@ -21,10 +27,23 @@ from dbt.tests.adapter.utils.test_right import BaseRight
 from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
 from dbt.tests.adapter.utils.test_split_part import BaseSplitPart
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
+from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampAware
 
 
 @pytest.mark.skip("any_value not supported by this adapter")
 class TestAnyValueNetezza(BaseAnyValue):
+    pass
+
+
+class TestArrayAppendNetezza(BaseArrayAppend):
+    pass
+
+
+class TestArrayConcatNetezza(BaseArrayConcat):
+    pass
+
+
+class TestArrayConstructNetezza(BaseArrayConstruct):
     pass
 
 
@@ -40,10 +59,16 @@ class TestConcatNetezza(BaseConcat):
     pass
 
 
+# Use either BaseCurrentTimestampAware or BaseCurrentTimestampNaive but not both
+class TestCurrentTimestampNetezza(BaseCurrentTimestampAware):
+    pass
+
+
 class TestDateTruncNetezza(BaseDateTrunc):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_date_trunc.csv": seeds__data_date_trunc_csv.replace(" ", "T")}
+
     pass
 
 
@@ -51,6 +76,7 @@ class TestDateAddNetezza(BaseDateAdd):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_dateadd.csv": seeds__data_dateadd_csv.replace(" ", "T")}
+
     pass
 
 
@@ -58,6 +84,7 @@ class TestDateDiffNetezza(BaseDateDiff):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_datediff.csv": seeds__data_datediff_csv.replace(" ", "T")}
+
     pass
 
 
