@@ -1,5 +1,6 @@
 import agate
 from dataclasses import dataclass
+import os
 from typing import Optional, List, Dict
 
 from dbt.adapters.sql import SQLAdapter
@@ -151,6 +152,10 @@ class NetezzaAdapter(SQLAdapter):
             raise
         finally:
             conn.transaction_open = False
+
+    @available
+    def get_seed_file_path(self, model) -> str:
+        return os.path.join(model["root_path"], model["original_file_path"])
 
     # Override to change the default value of quote_columns to False
     # Source: https://github.com/dbt-labs/dbt-core/blob/7f8d9a7af976f640e376900773a0d793acf3a3ce/core/dbt/adapters/base/impl.py#L812-L828
