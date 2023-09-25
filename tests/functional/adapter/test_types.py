@@ -5,11 +5,7 @@ from dbt.tests.adapter.utils.data_types.test_type_float import BaseTypeFloat
 from dbt.tests.adapter.utils.data_types.test_type_int import BaseTypeInt
 from dbt.tests.adapter.utils.data_types.test_type_numeric import BaseTypeNumeric
 from dbt.tests.adapter.utils.data_types.test_type_string import BaseTypeString
-from dbt.tests.adapter.utils.data_types.test_type_timestamp import (
-    BaseTypeTimestamp,
-    seeds__expected_csv,
-    seeds__expected_yml,
-)
+from dbt.tests.adapter.utils.data_types.test_type_timestamp import BaseTypeTimestamp
 from dbt.tests.util import get_connection
 
 
@@ -51,7 +47,7 @@ class TestTypeNumericNetezza(BaseTypeNumeric):
 
 
 @pytest.mark.skip(
-    reason="Netezza requires `varchar` length to be specified and `text` type results in CLOB error."
+    "Netezza requires `varchar` length to be specified and `text` type results in CLOB error."
 )
 class TestTypeStringNetezza(BaseTypeString):
     pass
@@ -59,10 +55,5 @@ class TestTypeStringNetezza(BaseTypeString):
 
 class TestTypeTimestampNetezza(BaseTypeTimestamp):
     @pytest.fixture(scope="class")
-    def seeds(self):
-        return {
-            "expected.csv": seeds__expected_csv.replace(" ", "T"),
-            "expected.yml": seeds__expected_yml,
-        }
-
-    pass
+    def project_config_update(self):
+        return {"seeds": {"datetimedelim": " "}}

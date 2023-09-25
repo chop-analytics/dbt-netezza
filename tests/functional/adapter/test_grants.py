@@ -12,7 +12,6 @@ NOTE: None of these test usernames should be the same as session_user when the
 tests run, or the tests will find no privileges and fail
 """
 
-import pytest
 from dbt.tests.adapter.grants.test_incremental_grants import BaseIncrementalGrants
 from dbt.tests.adapter.grants.test_invalid_grants import BaseInvalidGrants
 from dbt.tests.adapter.grants.test_model_grants import BaseModelGrants
@@ -24,8 +23,6 @@ from dbt.tests.util import (
     run_dbt_and_capture,
     get_manifest,
     write_file,
-    relation_from_name,
-    get_connection,
 )
 
 my_incremental_model_sql = """

@@ -6,12 +6,9 @@ from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
-from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd, seeds__data_dateadd_csv
-from dbt.tests.adapter.utils.test_datediff import BaseDateDiff, seeds__data_datediff_csv
-from dbt.tests.adapter.utils.test_date_trunc import (
-    BaseDateTrunc,
-    seeds__data_date_trunc_csv,
-)
+from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd
+from dbt.tests.adapter.utils.test_datediff import BaseDateDiff
+from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
 from dbt.tests.adapter.utils.test_escape_single_quotes import (
     BaseEscapeSingleQuotesQuote,
 )
@@ -48,7 +45,9 @@ class TestArrayConstructNetezza(BaseArrayConstruct):
 
 
 class TestBoolOrNetezza(BaseBoolOr):
-    pass
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {"seeds": {"boolstyle": "TRUE_FALSE"}}
 
 
 class TestCastBoolToTextNetezza(BaseCastBoolToText):
@@ -66,26 +65,20 @@ class TestCurrentTimestampNetezza(BaseCurrentTimestampAware):
 
 class TestDateTruncNetezza(BaseDateTrunc):
     @pytest.fixture(scope="class")
-    def seeds(self):
-        return {"data_date_trunc.csv": seeds__data_date_trunc_csv.replace(" ", "T")}
-
-    pass
+    def project_config_update(self):
+        return {"seeds": {"datetimedelim": " "}}
 
 
 class TestDateAddNetezza(BaseDateAdd):
     @pytest.fixture(scope="class")
-    def seeds(self):
-        return {"data_dateadd.csv": seeds__data_dateadd_csv.replace(" ", "T")}
-
-    pass
+    def project_config_update(self):
+        return {"seeds": {"datetimedelim": " "}}
 
 
 class TestDateDiffNetezza(BaseDateDiff):
     @pytest.fixture(scope="class")
-    def seeds(self):
-        return {"data_datediff.csv": seeds__data_datediff_csv.replace(" ", "T")}
-
-    pass
+    def project_config_update(self):
+        return {"seeds": {"datetimedelim": " "}}
 
 
 class TestEscapeSingleQuotesNetezza(BaseEscapeSingleQuotesQuote):
