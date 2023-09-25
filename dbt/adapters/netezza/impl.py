@@ -190,3 +190,9 @@ class NetezzaAdapter(SQLAdapter):
             else:
                 grants_dict.update({privilege: [grantee]})
         return grants_dict
+
+    def valid_incremental_strategies(self):
+        """The set of standard builtin strategies which this adapter supports out-of-the-box.
+        Not used to validate custom strategies defined by end users.
+        """
+        return ["merge", "delete+insert"]
