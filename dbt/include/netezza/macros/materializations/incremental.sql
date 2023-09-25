@@ -1,18 +1,3 @@
-{% macro dbt_netezza_validate_get_incremental_strategy(config) %}
-  {#-- Find and validate the incremental strategy #}
-  {%- set strategy = config.get("incremental_strategy") or "delete+insert" -%}
-
-  {% set invalid_strategy_msg -%}
-    Invalid incremental strategy provided: {{ strategy }}
-    Expected one of: 'merge', 'delete+insert'
-  {%- endset %}
-  {% if strategy not in ['merge', 'delete+insert'] %}
-    {% do exceptions.raise_compiler_error(invalid_strategy_msg) %}
-  {% endif %}
-
-  {% do return(strategy) %}
-{% endmacro %}
-
 {% macro dbt_netezza_get_incremental_sql(strategy, tmp_relation, target_relation, unique_key, dest_columns) %}
   {% if strategy == 'merge' %}
     {% do return(get_merge_sql(target_relation, tmp_relation, unique_key, dest_columns)) %}
@@ -36,8 +21,6 @@
   {%- set full_refresh_mode = (should_full_refresh()) -%}
 
   {% set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') %}
-  {#-- Validate early so we don't run SQL if the strategy is invalid --#}
-  {% set strategy = dbt_netezza_validate_get_incremental_strategy(config) -%}
   
   {% set tmp_identifier = model['name'] + '__dbt_tmp' %}
   {% set backup_identifier = model['name'] + "__dbt_backup" %}
