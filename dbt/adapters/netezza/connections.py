@@ -5,7 +5,7 @@ import time
 from dataclasses import dataclass
 from typing import Optional
 
-from dbt.exceptions import RuntimeException
+from dbt.exceptions import RuntimeException, DatabaseException
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager as connection_cls
 from dbt.events import AdapterLogger
@@ -78,6 +78,9 @@ class NetezzaConnectionManager(connection_cls):
                 self.rollback_if_open()
             except pyodbc.DatabaseError:
                 logger.error("Failed to release connection!")
+
+            _, error_message = e.args
+            raise DatabaseException(error_message) from e
 
         except Exception as e:
             logger.debug("Error running SQL: {}", sql)
@@ -155,7 +158,7 @@ class NetezzaConnectionManager(connection_cls):
         if your cursor does not offer rich metadata.
         """
         if not len(cursor.messages):
-            return AdapterResponse("OK")
+            return AdapterResponse("OK", rows_affected=cursor.rowcount)
         last_code, last_message = cursor.messages[-1]
         return AdapterResponse(last_message, last_code, cursor.rowcount)
 
