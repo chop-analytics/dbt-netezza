@@ -18,13 +18,14 @@ from dbt.tests.adapter.basic.test_docs_generate import BaseDocsGenerate
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
 
 
-from dbt.tests.util import run_dbt, check_relations_equal, relation_from_name
-from dbt.contracts.results import RunStatus
+from dbt.tests.util import (
+    run_dbt,
+    check_relations_equal,
+    relation_from_name,
+    run_sql_with_adapter,
+)
 from dbt.tests.adapter.basic.files import (
-    seeds_base_csv,
-    seeds_added_csv,
     schema_base_yml,
-    config_materialized_incremental,
 )
 
 incremental_sql = """
@@ -58,18 +59,10 @@ class TestEphemeralNetezza(BaseEphemeral):
     pass
 
 
-class TestIncrementalNetezza:
-    @pytest.fixture(scope="class")
-    def project_config_update(self):
-        return {"name": "incremental"}
-
+class TestIncrementalNetezza(BaseIncremental):
     @pytest.fixture(scope="class")
     def models(self):
         return {"incremental.sql": incremental_sql, "schema.yml": schema_base_yml}
-
-    @pytest.fixture(scope="class")
-    def seeds(self):
-        return {"base.csv": seeds_base_csv, "added.csv": seeds_added_csv}
 
     def test_incremental(self, project):
         # seed command
@@ -105,6 +98,11 @@ class TestIncrementalNetezza:
 
         # check relations equal
         check_relations_equal(project.adapter, ["added", "incremental"])
+
+        # clean up
+        for test_relation in ["base", "added", "incremental"]:
+            sql = f"drop table {relation_from_name(project.adapter, test_relation)}"
+            run_sql_with_adapter(project.adapter, sql)
 
 
 class TestIncrementalNotSchemaChangeNetezza(BaseIncrementalNotSchemaChange):
