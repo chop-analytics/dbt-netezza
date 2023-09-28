@@ -9,14 +9,5 @@
 {% endmacro %}
 
 {% macro netezza__get_incremental_default_sql(arg_dict) %}
-  {% set unique_key = arg_dict.get("unique_key") %}
-  {% if unique_key %}
-    {{ return(adapter.dispatch('get_incremental_merge_sql')(arg_dict)) }}
-  {% else %}
-    {{ return(adapter.dispatch('get_incremental_delete_insert_sql')(arg_dict)) }}
-  {% endif %}
-{% endmacro %}
-
-{% macro get_incremental_default_sql(arg_dict) %}
-  {{ return(adapter.dispatch('get_incremental_default_sql')(arg_dict)) }}
+  {{ return(adapter.dispatch('get_incremental_delete_insert_sql')(arg_dict)) }}
 {% endmacro %}
