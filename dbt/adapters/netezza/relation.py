@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from dbt.adapters.base.relation import BaseRelation, Policy
 from dbt.contracts.relation import ComponentName
@@ -13,7 +13,7 @@ class NetezzaQuotePolicy(Policy):
 
 @dataclass(frozen=True, eq=False, repr=False)
 class NetezzaRelation(BaseRelation):
-    quote_policy: NetezzaQuotePolicy = NetezzaQuotePolicy()
+    quote_policy: Policy = field(default_factory=lambda: NetezzaQuotePolicy())
 
     def _is_exactish_match(self, field: ComponentName, value: str) -> bool:
         # Remove requirement for dbt_created due to dbt bug with cache preservation

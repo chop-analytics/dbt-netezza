@@ -11,7 +11,7 @@ from dbt.adapters.base.meta import available
 from dbt.adapters.base.relation import BaseRelation
 from dbt.adapters.netezza.relation import NetezzaRelation
 from dbt.contracts.graph.manifest import Manifest
-from dbt.exceptions import CompilationException, DatabaseException
+from dbt.exceptions import CompilationError, DbtDatabaseError
 from dbt.utils import filter_null_values
 
 
@@ -62,7 +62,7 @@ class NetezzaAdapter(SQLAdapter):
         kwargs = {"schema_relation": schema_relation}
         try:
             results = self.execute_macro(LIST_RELATIONS_MACRO_NAME, kwargs=kwargs)
-        except DatabaseException as exc:
+        except DbtDatabaseError as exc:
             # if the schema doesn't exist, we just want to return.
             # Alternatively, we could query the list of schemas before we start
             # and skip listing the missing ones, which sounds expensive.
@@ -168,7 +168,7 @@ class NetezzaAdapter(SQLAdapter):
         elif quote_config is None:
             pass
         else:
-            raise CompilationException(
+            raise CompilationError(
                 f'The seed configuration value of "quote_columns" has an '
                 f"invalid type {type(quote_config)}"
             )

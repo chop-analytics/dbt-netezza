@@ -2,10 +2,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Tuple, Any
 import time
-from dataclasses import dataclass
-from typing import Optional
 
-from dbt.exceptions import RuntimeException, DatabaseException
+from dbt.exceptions import DbtRuntimeError, DbtDatabaseError
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager as connection_cls
 from dbt.events import AdapterLogger
@@ -80,19 +78,19 @@ class NetezzaConnectionManager(connection_cls):
                 logger.error("Failed to release connection!")
 
             _, error_message = e.args
-            raise DatabaseException(error_message) from e
+            raise DbtDatabaseError(error_message) from e
 
         except Exception as e:
             logger.debug("Error running SQL: {}", sql)
             logger.debug("Rolling back transaction.")
             self.rollback_if_open()
-            if isinstance(e, RuntimeException):
+            if isinstance(e, DbtRuntimeError):
                 # during a sql query, an internal to dbt exception was raised.
                 # this sounds a lot like a signal handler and probably has
                 # useful information, so raise it without modification.
                 raise
 
-            raise RuntimeException(str(e)) from e
+            raise DbtRuntimeError(str(e)) from e
 
     @classmethod
     def open(cls, connection):
