@@ -25,6 +25,6 @@
     {% elif datepart == 'microsecond' %}
         ({{ datediff(first_date, second_date, 'minute') }} * 60000000 + floor(date_part('microsecond', ({{second_date}})::timestamp)) - floor(date_part('microsecond', ({{first_date}})::timestamp)))
     {% else %}
-        {{ exceptions.raise_compiler_error("Unsupported datepart for macro datediff in postgres: {!r}".format(datepart)) }}
+        {{ exceptions.raise_compiler_error("Unsupported datepart for macro datediff in netezza: {!r}".format(datepart)) }}
     {% endif %}
 {%- endmacro %}
