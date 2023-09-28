@@ -9,5 +9,5 @@
 {% endmacro %}
 
 {% macro netezza__get_incremental_default_sql(arg_dict) %}
-  {{ return(adapter.dispatch('get_incremental_delete_insert_sql')(arg_dict)) }}
+  {% do return(get_incremental_delete_insert_sql(arg_dict)) %}
 {% endmacro %}
