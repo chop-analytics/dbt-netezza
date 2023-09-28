@@ -55,7 +55,7 @@ def _get_dbt_core_version():
 
 
 package_name = "dbt-netezza"
-package_version = "1.3.1"
+package_version = "1.4.0"
 dbt_core_version = _get_dbt_core_version()
 description = """The Netezza adapter plugin for dbt"""
 
