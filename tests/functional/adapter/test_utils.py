@@ -26,6 +26,8 @@ from dbt.tests.adapter.utils.test_split_part import BaseSplitPart
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
 from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampAware
 
+from dbt.tests.util import run_dbt, check_relations_equal
+
 
 @pytest.mark.skip("any_value not supported by this adapter")
 class TestAnyValueNetezza(BaseAnyValue):
@@ -37,7 +39,12 @@ class TestArrayAppendNetezza(BaseArrayAppend):
 
 
 class TestArrayConcatNetezza(BaseArrayConcat):
-    pass
+    # Override to skip data type check
+    def test_expected_actual(self, project):
+        run_dbt(["build"])
+
+        # check contents equal
+        check_relations_equal(project.adapter, ["expected", "actual"])
 
 
 class TestArrayConstructNetezza(BaseArrayConstruct):
