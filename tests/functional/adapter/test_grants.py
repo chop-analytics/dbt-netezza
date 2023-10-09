@@ -127,5 +127,5 @@ class TestSeedGrantsNetezza(BaseSeedGrants):
     pass
 
 
-class TestSnapshotGrants(BaseSnapshotGrants):
+class TestSnapshotGrantsNetezza(BaseSnapshotGrants):
     pass
