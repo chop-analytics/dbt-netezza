@@ -24,7 +24,7 @@ from dbt.tests.adapter.utils.test_right import BaseRight
 from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
 from dbt.tests.adapter.utils.test_split_part import BaseSplitPart
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
-from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampAware
+from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampNaive
 
 from dbt.tests.util import run_dbt, check_relations_equal
 
@@ -65,8 +65,9 @@ class TestConcatNetezza(BaseConcat):
     pass
 
 
-# Use either BaseCurrentTimestampAware or BaseCurrentTimestampNaive but not both
-class TestCurrentTimestampNetezza(BaseCurrentTimestampAware):
+# Netezza does not support datetimes with specified timezone,
+# so BaseCurrentTimestampNaive was implemented
+class TestCurrentTimestampNetezza(BaseCurrentTimestampNaive):
     pass
 
 

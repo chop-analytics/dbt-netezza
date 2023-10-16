@@ -104,10 +104,6 @@
   {{ return(sql_convert_columns_in_relation(table)) }}
 {% endmacro %}
 
-{% macro netezza__current_timestamp() -%}
-  current_timestamp
-{%- endmacro %}
-
 {% macro netezza__snapshot_merge_sql(target, source, insert_cols) -%}
     {%- set insert_cols_csv = insert_cols | join(', ') -%}
 
@@ -125,9 +121,3 @@
     from {{ source }} as DBT_INTERNAL_SOURCE
     where DBT_INTERNAL_SOURCE.dbt_change_type::text = 'insert'::text;
 {% endmacro %}
-
-
-{% macro netezza__snapshot_string_as_time(timestamp) -%}
-    {%- set result = "'" ~ timestamp ~ "'" ~ "::timestamp" -%}
-    {{ return(result) }}
-{%- endmacro %}
