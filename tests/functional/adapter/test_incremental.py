@@ -107,5 +107,5 @@ class TestPredicatesMergeNetezza(BaseIncrementalPredicatesNetezza):
         }
 
 
-class TestUniqueKeyNetezza(BaseIncrementalUniqueKey):
+class TestIncrementalUniqueKeyNetezza(BaseIncrementalUniqueKey):
     pass
