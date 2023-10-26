@@ -3,13 +3,13 @@ from dataclasses import dataclass
 import os
 from typing import Optional, List, Dict
 
-from dbt.adapters.sql import SQLAdapter
-from dbt.adapters.sql.impl import LIST_RELATIONS_MACRO_NAME
-from dbt.adapters.netezza import NetezzaConnectionManager
-from dbt.adapters.base.impl import AdapterConfig
 from dbt.adapters.base.meta import available
 from dbt.adapters.base.relation import BaseRelation
+from dbt.adapters.netezza import NetezzaConnectionManager
+from dbt.adapters.netezza.column import NetezzaColumn
 from dbt.adapters.netezza.relation import NetezzaRelation
+from dbt.adapters.protocol import AdapterConfig
+from dbt.adapters.sql.impl import SQLAdapter, LIST_RELATIONS_MACRO_NAME
 from dbt.contracts.graph.manifest import Manifest
 from dbt.exceptions import CompilationError, DbtDatabaseError
 from dbt.utils import filter_null_values
@@ -21,9 +21,10 @@ class NetezzaConfig(AdapterConfig):
 
 
 class NetezzaAdapter(SQLAdapter):
+    AdapterSpecificConfigs = NetezzaConfig
     ConnectionManager = NetezzaConnectionManager
     Relation = NetezzaRelation
-    AdapterSpecificConfigs = NetezzaConfig
+    Column = NetezzaColumn
 
     @classmethod
     def date_function(cls):
