@@ -121,3 +121,24 @@
     from {{ source }} as DBT_INTERNAL_SOURCE
     where DBT_INTERNAL_SOURCE.dbt_change_type::text = 'insert'::text;
 {% endmacro %}
+
+{% macro netezza__alter_relation_comment(relation, comment) %}
+  {% set escaped_comment = netezza_escape_comment(comment) %}
+  comment on {{ relation.type }} {{ relation }} is {{ escaped_comment }};
+{% endmacro %}
+
+{% macro netezza__alter_column_comment(relation, column_dict) %}
+  {% set existing_columns = adapter.get_columns_in_relation(relation) | map(attribute="name") | list %}
+  {% for column_name in column_dict if (column_name if column_dict[column_name]['quote'] else column_name | upper in existing_columns) %}
+    {% set comment = column_dict[column_name]['description'] %}
+    {% set escaped_comment = netezza_escape_comment(comment) %}
+    comment on column {{ relation }}.{{ adapter.quote(column_name) if column_dict[column_name]['quote'] else column_name }} is {{ escaped_comment }};
+  {% endfor %}
+{% endmacro %}
+
+{% macro netezza_escape_comment(comment) -%}
+  {% if comment is not string %}
+    {% do exceptions.raise_compiler_error('cannot escape a non-string: ' ~ comment) %}
+  {% endif %}
+  '{{ comment | replace("'", "''")}}'
+{%- endmacro %}
