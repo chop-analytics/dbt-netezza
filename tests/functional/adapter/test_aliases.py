@@ -1,22 +1,41 @@
+import pytest
+
 from dbt.tests.adapter.aliases.test_aliases import (
     BaseAliases,
     BaseAliasErrors,
     BaseSameAliasDifferentSchemas,
     BaseSameAliasDifferentDatabases,
+    MACROS__CAST_SQL,
+    MACROS__EXPECT_VALUE_SQL,
 )
 
 
-class TestAliasesNetezza(BaseAliases):
+class BaseAliasesNetezza:
+    @pytest.fixture(scope="class")
+    def macros(self):
+        return {
+            "cast.sql": MACROS__CAST_SQL.replace("text", "varchar(100)"),
+            "expect_value.sql": MACROS__EXPECT_VALUE_SQL,
+        }
+
+
+class TestAliasesNetezza(BaseAliasesNetezza, BaseAliases):
     pass
 
 
-class TestAliasErrorsNetezza(BaseAliasErrors):
+class TestAliasErrorsNetezza(BaseAliasesNetezza, BaseAliasErrors):
     pass
 
 
-class TestSameAliasDifferentSchemasNetezza(BaseSameAliasDifferentSchemas):
+@pytest.mark.skip("Adapter does not support multiple schemas.")
+class TestSameAliasDifferentSchemasNetezza(
+    BaseAliasesNetezza, BaseSameAliasDifferentSchemas
+):
     pass
 
 
-class TestSameAliasDifferentDatabasesNetezza(BaseSameAliasDifferentDatabases):
+@pytest.mark.skip("Adapter does not support multiple databases.")
+class TestSameAliasDifferentDatabasesNetezza(
+    BaseAliasesNetezza, BaseSameAliasDifferentDatabases
+):
     pass

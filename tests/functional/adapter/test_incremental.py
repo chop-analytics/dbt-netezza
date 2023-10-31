@@ -11,7 +11,7 @@ from dbt.tests.adapter.incremental.test_incremental_unique_id import (
 )
 from dbt.tests.util import relation_from_name, run_sql_with_adapter
 
-# overwrite to explicitly set varchar field lengths in model
+# Overwrite to explicitly cast to string types in model
 models__delete_insert_incremental_predicates_sql = """
 {{ config(
     materialized = 'incremental',
@@ -20,18 +20,18 @@ models__delete_insert_incremental_predicates_sql = """
 
 {% if not is_incremental() %}
 
-select 1 as id, 'hello'::varchar(100) as msg, 'blue'::varchar(100) as color
+select 1 as id, 'hello'::{{type_string()}} as msg, 'blue'::{{type_string()}} as color
 union all
-select 2 as id, 'goodbye'::varchar(100) as msg, 'red'::varchar(100) as color
+select 2 as id, 'goodbye'::{{type_string()}} as msg, 'red'::{{type_string()}} as color
 
 {% else %}
 
 -- delete will not happen on the above record where id = 2, so new record will be inserted instead
-select 1 as id, 'hey'::varchar(100) as msg, 'blue'::varchar(100) as color
+select 1 as id, 'hey'::{{type_string()}} as msg, 'blue'::{{type_string()}} as color
 union all
-select 2 as id, 'yo'::varchar(100) as msg, 'green'::varchar(100) as color
+select 2 as id, 'yo'::{{type_string()}} as msg, 'green'::{{type_string()}} as color
 union all
-select 3 as id, 'anyway'::varchar(100) as msg, 'purple'::varchar(100) as color
+select 3 as id, 'anyway'::{{type_string()}} as msg, 'purple'::{{type_string()}} as color
 
 {% endif %}
 """
@@ -62,12 +62,6 @@ class BaseIncrementalPredicatesNetezza(BaseIncrementalPredicates):
             update_sql_file=None,
         )
         self.check_scenario_correctness(expected_fields, test_case_fields, project)
-        for test_relation in [
-            "delete_insert_incremental_predicates",
-            "expected_delete_insert_incremental_predicates",
-        ]:
-            sql = f"drop table {relation_from_name(project.adapter, test_relation)}"
-            run_sql_with_adapter(project.adapter, sql)
 
 
 class TestIncrementalPredicatesDeleteInsertNetezza(BaseIncrementalPredicatesNetezza):

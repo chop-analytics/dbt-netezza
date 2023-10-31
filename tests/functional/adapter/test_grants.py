@@ -17,7 +17,6 @@ from dbt.tests.adapter.grants.test_invalid_grants import BaseInvalidGrants
 from dbt.tests.adapter.grants.test_model_grants import BaseModelGrants
 from dbt.tests.adapter.grants.test_seed_grants import BaseSeedGrants
 from dbt.tests.adapter.grants.test_snapshot_grants import BaseSnapshotGrants
-
 from dbt.tests.util import (
     run_dbt,
     run_dbt_and_capture,
@@ -63,7 +62,7 @@ class TestModelGrantsNetezza(BaseModelGrants):
 
 
 class TestIncrementalGrantsNetezza(BaseIncrementalGrants):
-    # override due to DROP SCHEMA statement, which is not supported by Netezza
+    # Override due to DROP SCHEMA statement, which is not supported by Netezza
     def test_incremental_grants(self, project, get_test_users):
         # we want the test to fail, not silently skip
         test_users = get_test_users
