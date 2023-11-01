@@ -197,3 +197,16 @@ class NetezzaConnectionManager(connection_cls):
             )
 
             return connection, cursor
+        
+    @classmethod
+    def data_type_code_to_name(cls, type_code) -> str:
+        name_map = {
+            'int': 'INTEGER',
+            'str': 'STRING',
+            'date': 'DATE'
+            'datetime': 'DATETIME',
+            'bool': 'BOOLEAN',
+            'float': 'FLOAT'
+        }
+        assert inspect.isclass(type_code)
+        return name_map[type_code.__name__]
