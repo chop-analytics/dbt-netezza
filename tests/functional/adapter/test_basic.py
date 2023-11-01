@@ -135,11 +135,25 @@ class TestGenericTestsNetezza(BaseGenericTests):
     pass
 
 
-class TestSnapshotCheckColsNetezza(BaseSnapshotCheckCols):
+class NetezzaSnapshotSeedConfig:
+    # Override to set varchar widths to allow snapshot to store longer values
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "seeds": {
+                "test": {
+                    "base": {"+column_types": {"name": "varchar(100)"}},
+                    "added": {"+column_types": {"name": "varchar(100)"}},
+                }
+            }
+        }
+
+
+class TestSnapshotCheckColsNetezza(NetezzaSnapshotSeedConfig, BaseSnapshotCheckCols):
     pass
 
 
-class TestSnapshotTimestampNetezza(BaseSnapshotTimestamp):
+class TestSnapshotTimestampNetezza(NetezzaSnapshotSeedConfig, BaseSnapshotTimestamp):
     pass
 
 
