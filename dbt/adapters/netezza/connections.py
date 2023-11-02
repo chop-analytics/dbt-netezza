@@ -203,7 +203,7 @@ class NetezzaConnectionManager(connection_cls):
         name_map = {
             'int': 'INTEGER',
             'str': 'STRING',
-            'date': 'DATE'
+            'date': 'DATE',
             'datetime': 'DATETIME',
             'bool': 'BOOLEAN',
             'float': 'FLOAT'
