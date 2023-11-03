@@ -26,6 +26,12 @@
 
   create {% if temporary -%}temporary{%- endif %} table
     {{ relation }}
+    {% set contract_config = config.get('contract') %}
+    {% if contract_config.enforced and (not temporary) %}
+        {{ get_assert_columns_equivalent(sql) }}
+        {{ get_table_columns_and_constraints() }}
+        {%- set sql = get_select_subquery(sql) %}
+    {% endif %}
   as (
     {{ sql }}
   )
