@@ -4,11 +4,12 @@ import os
 from typing import Optional, List, Dict
 
 from dbt.adapters.base.meta import available
+from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.relation import BaseRelation
 from dbt.adapters.netezza import NetezzaConnectionManager
 from dbt.adapters.netezza.column import NetezzaColumn
 from dbt.adapters.netezza.relation import NetezzaRelation
-from dbt.adapters.protocol import AdapterConfig, ConstraintSupport
+from dbt.adapters.protocol import AdapterConfig
 from dbt.adapters.sql.impl import SQLAdapter, LIST_RELATIONS_MACRO_NAME
 from dbt.contracts.graph.manifest import Manifest
 from dbt.exceptions import CompilationError, DbtDatabaseError
