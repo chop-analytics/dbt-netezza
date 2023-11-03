@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Tuple, Any
 import time
+import inspect
 
 from dbt.exceptions import DbtRuntimeError, DbtDatabaseError
 from dbt.adapters.base import Credentials

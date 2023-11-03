@@ -24,19 +24,30 @@
 
   {{ sql_header if sql_header is not none }}
 
+  {% set contract_config = config.get('contract') %}
+  {% if contract_config.enforced and (not temporary) %}
+    {% set colnames_string = model.get('columns') | join(", ") %}
+
+    create table 
+    {{ relation }}
+    {{ get_assert_columns_equivalent(sql) }}
+    {{ get_table_columns_and_constraints() }}
+    {%- set sql = get_select_subquery(sql) %}
+    {{ dist(_dist) }}
+    ;
+    
+    insert into {{ relation }} 
+    {{ sql }};
+  {% else %}
+
   create {% if temporary -%}temporary{%- endif %} table
     {{ relation }}
-    {% set contract_config = config.get('contract') %}
-    {% if contract_config.enforced and (not temporary) %}
-        {{ get_assert_columns_equivalent(sql) }}
-        {{ get_table_columns_and_constraints() }}
-        {%- set sql = get_select_subquery(sql) %}
-    {% endif %}
   as (
     {{ sql }}
   )
   {{ dist(_dist) }}
   ;
+  {% endif %}
 {%- endmacro %}
 
 {% macro netezza__list_schemas(database) -%}
