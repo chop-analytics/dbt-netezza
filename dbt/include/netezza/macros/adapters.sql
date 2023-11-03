@@ -17,17 +17,8 @@
   {%- endif -%}
 {%- endmacro -%}
 
-
-{% macro netezza__create_table_as(temporary, relation, sql) -%}
-  {%- set _dist = config.get('dist') -%}
-  {%- set sql_header = config.get('sql_header', none) -%}
-
-  {{ sql_header if sql_header is not none }}
-
-  {% set contract_config = config.get('contract') %}
-  {% if contract_config.enforced and (not temporary) %}
-    {% set colnames_string = model.get('columns') | join(", ") %}
-
+{% macro create_table_with_constraints(relation, sql, _dist) %}
+    {%- set _dist = config.get('dist') -%}
     create table 
     {{ relation }}
     {{ get_assert_columns_equivalent(sql) }}
@@ -35,18 +26,31 @@
     {%- set sql = get_select_subquery(sql) %}
     {{ dist(_dist) }}
     ;
-    
+
     insert into {{ relation }} 
     {{ sql }};
-  {% else %}
+{% endmacro %}
 
-  create {% if temporary -%}temporary{%- endif %} table
+{% macro create_table_no_constraints(temporary, relation, sql, _dist) %}
+    create {% if temporary -%}temporary{%- endif %} table
     {{ relation }}
-  as (
-    {{ sql }}
-  )
-  {{ dist(_dist) }}
-  ;
+    as (
+        {{ sql }}
+    )
+    {{ dist(_dist) }}
+    ;
+{% endmacro %}
+
+{% macro netezza__create_table_as(temporary, relation, sql) -%}
+  {%- set sql_header = config.get('sql_header', none) -%}
+  {%- set _dist = config.get('dist') -%}
+  {{ sql_header if sql_header is not none }}
+
+  {% set contract_config = config.get('contract') %}
+  {% if contract_config.enforced and (not temporary) %}
+    {{ create_table_with_constraints(relation, sql, _dist) }}
+  {% else %}
+    {{ create_table_no_constraints(temporary, relation, sql, _dist) }}
   {% endif %}
 {%- endmacro %}
 
