@@ -1,4 +1,5 @@
 from dbt.tests.adapter.constraints.test_constraints import (
+    BaseConstraintsColumnsEqual,
     BaseTableConstraintsColumnsEqual,
     BaseViewConstraintsColumnsEqual,
     BaseIncrementalConstraintsColumnsEqual,
@@ -13,38 +14,32 @@ from dbt.tests.adapter.constraints.test_constraints import (
     TestIncrementalForeignKeyConstraint as BaseIncrementalForeignKeyConstraint,
 )
 
-from dbt.tests.adapter.constraints.fixtures import my_model_with_quoted_column_name_sql
+from dbt.tests.adapter.constraints.fixtures import (
+    my_model_with_quoted_column_name_sql,
+    my_model_incremental_wrong_order_sql,
+    my_model_incremental_wrong_name_sql,
+)
+from tests.functional.adapter.constraint_fixtures import (
+    model_quoted_column_schema_yml,
+    test_constraint_quoted_column_netezza__expected_sql,
+    model_schema_yml,
+)
 import pytest
 
-model_quoted_column_schema_yml = """
-version: 2
-models:
-  - name: my_model
-    config:
-      contract:
-        enforced: true
-      materialized: table
-    constraints:
-      - type: check
-        # this one is the on the user
-        expression: ("from" = 'blue')
-        columns: [ '"from"' ]
-    columns:
-      - name: id
-        data_type: integer
-        description: hello
-        constraints:
-          - type: not_null
-        tests:
-          - unique
-      - name: from  # reserved word
-        quote: true
-        data_type: varchar(100)
-        constraints:
-          - type: not_null
-      - name: date_day
-        data_type: varchar(100)
-"""
+
+class BaseConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqual):
+    @pytest.fixture
+    def string_type(self):
+        return "VARCHAR(2000)"
+
+class BaseIncrementalConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqual):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model_wrong_order.sql": my_model_incremental_wrong_order_sql,
+            "my_model_wrong_name.sql": my_model_incremental_wrong_name_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
 
 
 class TestConstraintQuotedColumnNetezza(BaseConstraintQuotedColumn):
@@ -57,26 +52,11 @@ class TestConstraintQuotedColumnNetezza(BaseConstraintQuotedColumn):
 
     @pytest.fixture(scope="class")
     def expected_sql(self):
-            return """
-create table <model_identifier> (
-    id integer not null,
-    "from" varchar(100) not null,
-    date_day varchar(100),
-    check (("from" = 'blue'))
-) ;
-insert into <model_identifier> 
-    select id, "from", date_day
-    from (
-        select
-        'blue' as "from",
-        1 as id,
-        '2019-01-01' as date_day
-    ) as model_subq;
-    """
+            return test_constraint_quoted_column_netezza__expected_sql
 
 
 class TestIncrementalConstraintsColumnsEqualNetezza(
-    BaseIncrementalConstraintsColumnsEqual
+    BaseIncrementalConstraintsColumnsEqualNetezza
 ):
     pass
 

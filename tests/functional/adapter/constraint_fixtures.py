@@ -1,0 +1,129 @@
+model_quoted_column_schema_yml = """
+version: 2
+models:
+  - name: my_model
+    config:
+      contract:
+        enforced: true
+      materialized: table
+    constraints:
+      - type: check
+        # this one is the on the user
+        expression: ("from" = 'blue')
+        columns: [ '"from"' ]
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+        tests:
+          - unique
+      - name: from  # reserved word
+        quote: true
+        data_type: varchar(100)
+        constraints:
+          - type: not_null
+      - name: date_day
+        data_type: varchar(100)
+"""
+
+test_constraint_quoted_column_netezza__expected_sql = """
+create table <model_identifier> (
+    id integer not null,
+    "from" varchar(100) not null,
+    date_day varchar(100),
+    check (("from" = 'blue'))
+) ;
+insert into <model_identifier> 
+    select id, "from", date_day
+    from (
+        select
+        'blue' as "from",
+        1 as id,
+        '2019-01-01' as date_day
+    ) as model_subq;
+    """
+
+model_schema_yml = """
+version: 2
+models:
+  - name: my_model
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+          - type: primary_key
+          - type: check
+            expression: (id > 0)
+          - type: check
+            expression: id >= 1
+        tests:
+          - unique
+      - name: color
+        data_type: varchar(100)
+      - name: date_day
+        data_type: text
+  - name: my_model_error
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+          - type: primary_key
+          - type: check
+            expression: (id > 0)
+        tests:
+          - unique
+      - name: color
+        data_type: varchar(100)
+      - name: date_day
+        data_type: varchar(100)
+  - name: my_model_wrong_order
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+          - type: primary_key
+          - type: check
+            expression: (id > 0)
+        tests:
+          - unique
+      - name: color
+        data_type: varchar(100)
+      - name: date_day
+        data_type: varchar(100)
+  - name: my_model_wrong_name
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+          - type: primary_key
+          - type: check
+            expression: (id > 0)
+        tests:
+          - unique
+      - name: color
+        data_type: varchar(100)
+      - name: date_day
+        data_type: varchar(100)
+"""

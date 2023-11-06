@@ -31,9 +31,9 @@ class NetezzaAdapter(SQLAdapter):
     CONSTRAINT_SUPPORT = {
         ConstraintType.check: ConstraintSupport.ENFORCED,
         ConstraintType.not_null: ConstraintSupport.ENFORCED,
-        ConstraintType.unique: ConstraintSupport.NOT_ENFORCED,
-        ConstraintType.primary_key: ConstraintSupport.NOT_ENFORCED,
-        ConstraintType.foreign_key: ConstraintSupport.NOT_ENFORCED,
+        ConstraintType.unique: ConstraintSupport.ENFORCED,
+        ConstraintType.primary_key: ConstraintSupport.ENFORCED,
+        ConstraintType.foreign_key: ConstraintSupport.ENFORCED,
     }
 
     @classmethod
