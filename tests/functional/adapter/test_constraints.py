@@ -18,11 +18,16 @@ from dbt.tests.adapter.constraints.fixtures import (
     my_model_with_quoted_column_name_sql,
     my_model_incremental_wrong_order_sql,
     my_model_incremental_wrong_name_sql,
+    my_model_wrong_order_depends_on_fk_sql,
+    foreign_key_model_sql,
+    my_incremental_model_sql,
 )
 from tests.functional.adapter.constraint_fixtures import (
     model_quoted_column_schema_yml,
     test_constraint_quoted_column_netezza__expected_sql,
     model_schema_yml,
+    model_fk_constraint_schema_yml,
+    test_base__constraints_runtime_ddl_enforcement__expected_sql,
 )
 import pytest
 
@@ -77,12 +82,38 @@ class TestIncrementalConstraintsColumnsEqualNetezza(
     pass
 
 
-class TestIncrementalConstraintsRollbackNetezza(BaseIncrementalConstraintsRollback):
+class BaseIncrementalConstraintsRollbackNetezza(BaseIncrementalConstraintsRollback):
+    @pytest.fixture(scope="class")
+    def expected_error_messages(self):
+        return ['Field cannot contain null values']
+
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_incremental_model_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
+
+
+class TestIncrementalConstraintsRollbackNetezza(BaseIncrementalConstraintsRollbackNetezza):
     pass
 
 
+class BaseConstraintsRuntimeDdlEnforcementNetezza(BaseConstraintsRuntimeDdlEnforcement):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_model_wrong_order_depends_on_fk_sql,
+            "foreign_key_model.sql": foreign_key_model_sql,
+            "constraints_schema.yml": model_fk_constraint_schema_yml,
+        }
+
+    @pytest.fixture(scope="class")
+    def expected_sql(self):
+        return test_base__constraints_runtime_ddl_enforcement__expected_sql
+
 class TestIncrementalConstraintsRuntimeDdlEnforcementNetezza(
-    BaseIncrementalConstraintsRuntimeDdlEnforcement
+    BaseConstraintsRuntimeDdlEnforcementNetezza
 ):
     pass
 
