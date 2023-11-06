@@ -28,11 +28,27 @@ import pytest
 
 
 class BaseConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqual):
+    # overwrite to use valid Netezza string type
     @pytest.fixture
     def string_type(self):
-        return "VARCHAR(2000)"
+        return "varchar(2000)"
 
-class BaseIncrementalConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqual):
+    # overwrite to use all valid netezza types
+    @pytest.fixture
+    def data_types(self, schema_int_type, int_type, string_type):
+        # sql_column_value, schema_data_type, error_data_type
+        return [
+            ["1", schema_int_type, int_type],
+            # ["'1'", string_type, string_type],
+            # ["true", "boolean", "BOOL"],
+            # ["'2013-11-03 00:00:00-07'::timestamptz", "timestamptz", "DATETIMETZ"],
+            # ["'2013-11-03 00:00:00-07'::timestamp", "timestamp", "DATETIME"],
+            # ["ARRAY['a','b','c']", "text[]", "STRINGARRAY"],
+            # ["ARRAY[1,2,3]", "int[]", "INTEGERARRAY"],
+            # ["'1'::numeric", "numeric", "DECIMAL"],
+        ]
+
+class BaseIncrementalConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqualNetezza):
     @pytest.fixture(scope="class")
     def models(self):
         return {
@@ -85,7 +101,7 @@ class TestModelConstraintsRuntimeEnforcementNetezza(
     pass
 
 
-class TestTableConstraintsColumnsEqualNetezza(BaseTableConstraintsColumnsEqual):
+class TestTableConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqualNetezza):
     pass
 
 
