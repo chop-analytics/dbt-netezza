@@ -31,6 +31,11 @@ from dbt.tests.adapter.constraints.fixtures import (
     my_incremental_model_sql,
     my_model_data_type_sql,
     model_data_type_schema_yml,
+    my_model_sql,
+    my_model_wrong_order_sql,
+    my_model_wrong_name_sql,
+    my_model_view_wrong_order_sql,
+    my_model_view_wrong_name_sql,
 )
 from tests.functional.adapter.constraint_fixtures import (
     model_quoted_column_schema_yml,
@@ -125,7 +130,6 @@ class BaseConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqual):
                 wrong_schema_error_data_type,
                 "data type mismatch",
             ]
-            # run_sql_with_adapter(project.adapter, f"drop table my_model_data_type")
             assert all([(exp in log_output or exp.upper() in log_output) for exp in expected])
 
 class BaseIncrementalConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqualNetezza):
@@ -143,6 +147,18 @@ class TestIncrementalConstraintsColumnsEqualNetezza(
 ):
     pass
 
+
+class BaseConstraintsRollbackNetezza(BaseConstraintsRollback):
+    @pytest.fixture(scope="class")
+    def expected_error_messages(self):
+        return ['Field cannot contain null values']
+
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_model_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
 
 class BaseIncrementalConstraintsRollbackNetezza(BaseIncrementalConstraintsRollback):
     @pytest.fixture(scope="class")
@@ -173,6 +189,7 @@ class BaseConstraintsRuntimeDdlEnforcementNetezza(BaseConstraintsRuntimeDdlEnfor
     @pytest.fixture(scope="class")
     def expected_sql(self):
         return test_base_constraints_runtime_ddl_enforcement__expected_sql
+
 
 class TestIncrementalConstraintsRuntimeDdlEnforcementNetezza(
     BaseConstraintsRuntimeDdlEnforcementNetezza
@@ -209,21 +226,39 @@ class BaseModelConstraintsRuntimeEnforcementNetezza(BaseModelConstraintsRuntimeE
         }
 
 class TestModelConstraintsRuntimeEnforcementNetezza(
-    BaseModelConstraintsRuntimeEnforcementNetezza
+    BaseConstraintsRuntimeDdlEnforcementNetezza
 ):
-    pass
+
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_model_wrong_order_depends_on_fk_sql,
+            "foreign_key_model.sql": foreign_key_model_sql,
+            "constraints_schema.yml": model_fk_constraint_schema_yml,
+        }
 
 
 class TestTableConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqualNetezza):
-    pass
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model_wrong_order.sql": my_model_wrong_order_sql,
+            "my_model_wrong_name.sql": my_model_wrong_name_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
 
 
-class TestTableConstraintsRollbackNetezza(BaseConstraintsRollback):
-    pass
+class TestTableConstraintsRollbackNetezza(BaseConstraintsRollbackNetezza):
+    def test__constraints_enforcement_rollback(
+        self, project, expected_color, expected_error_messages, null_model_sql
+    ):
+        _, log_output = run_dbt_and_capture(["run", "-s", "my_model"])
+        expected = "constraints not supported"
+        assert expected in log_output
 
 
 class TestTableConstraintsRuntimeDdlEnforcementNetezza(
-    BaseConstraintsRuntimeDdlEnforcement
+    BaseConstraintsRuntimeDdlEnforcementNetezza
 ):
     pass
 
@@ -231,6 +266,20 @@ class TestTableConstraintsRuntimeDdlEnforcementNetezza(
 class TestTableContractSqlHeaderNetezza(BaseTableContractSqlHeader):
     pass
 
+class BaseViewConstraintsColumnsEqualNetezza(BaseConstraintsColumnsEqualNetezza):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model_wrong_order.sql": my_model_view_wrong_order_sql,
+            "my_model_wrong_name.sql": my_model_view_wrong_name_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
 
-class TestViewConstraintsColumnsEqualNetezza(BaseViewConstraintsColumnsEqual):
-    pass
+class TestViewConstraintsColumnsEqualNetezza(BaseViewConstraintsColumnsEqualNetezza):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model_wrong_order.sql": my_model_view_wrong_order_sql,
+            "my_model_wrong_name.sql": my_model_view_wrong_name_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
