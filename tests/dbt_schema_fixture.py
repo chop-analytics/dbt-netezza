@@ -39,7 +39,7 @@ def project_cleanup(adapter, project_root, project_cleanup_extra_relations):
     ]
     relations += project_cleanup_extra_relations
     drop_statements = [
-        f"drop {relation_type} {relation_from_name(adapter, relation)}"
+        f"drop {relation_type} {relation_from_name(adapter, relation)} if exists"
         for relation_type, relation in relations
     ]
     sql = ";\n".join(drop_statements)

@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Tuple, Any
 import time
+import inspect
 
 from dbt.exceptions import DbtRuntimeError, DbtDatabaseError
 from dbt.adapters.base import Credentials
@@ -197,3 +198,16 @@ class NetezzaConnectionManager(connection_cls):
             )
 
             return connection, cursor
+        
+    @classmethod
+    def data_type_code_to_name(cls, type_code) -> str:
+        name_map = {
+            'int': 'INTEGER',
+            'str': 'STRING',
+            'date': 'DATE',
+            'datetime': 'DATETIME',
+            'bool': 'BOOLEAN',
+            'float': 'FLOAT'
+        }
+        assert inspect.isclass(type_code)
+        return name_map[type_code.__name__]

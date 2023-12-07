@@ -4,6 +4,7 @@ import os
 from typing import Optional, List, Dict
 
 from dbt.adapters.base.meta import available
+from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.relation import BaseRelation
 from dbt.adapters.netezza import NetezzaConnectionManager
 from dbt.adapters.netezza.column import NetezzaColumn
@@ -13,6 +14,7 @@ from dbt.adapters.sql.impl import SQLAdapter, LIST_RELATIONS_MACRO_NAME
 from dbt.contracts.graph.manifest import Manifest
 from dbt.exceptions import CompilationError, DbtDatabaseError
 from dbt.utils import filter_null_values
+from dbt.contracts.graph.nodes import ConstraintType
 
 
 @dataclass
@@ -25,6 +27,14 @@ class NetezzaAdapter(SQLAdapter):
     ConnectionManager = NetezzaConnectionManager
     Relation = NetezzaRelation
     Column = NetezzaColumn
+
+    CONSTRAINT_SUPPORT = {
+        ConstraintType.check: ConstraintSupport.NOT_ENFORCED,
+        ConstraintType.not_null: ConstraintSupport.ENFORCED,
+        ConstraintType.unique: ConstraintSupport.NOT_ENFORCED,
+        ConstraintType.primary_key: ConstraintSupport.NOT_ENFORCED,
+        ConstraintType.foreign_key: ConstraintSupport.NOT_ENFORCED,
+    }
 
     @classmethod
     def date_function(cls):
