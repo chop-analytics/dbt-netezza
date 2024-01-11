@@ -10,7 +10,7 @@ pytest_plugins = ["dbt.tests.fixtures.project", "tests.dbt_schema_fixture"]
 def dbt_profile_target():
     return {
         "type": "netezza",
-        "threads": 1,
+        "threads": 4,
         "host": os.getenv("DBT_TEST_NZ_HOST"),
         "database": os.getenv("DBT_TEST_NZ_DB"),
         "user": os.getenv("DBT_TEST_NZ_USER"),

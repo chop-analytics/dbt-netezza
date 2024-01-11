@@ -4,6 +4,8 @@ from typing import Optional, Tuple, Any
 import time
 import inspect
 
+import agate
+from dbt.clients import agate_helper
 from dbt.exceptions import DbtRuntimeError, DbtDatabaseError
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager as connection_cls
@@ -72,7 +74,7 @@ class NetezzaConnectionManager(connection_cls):
             yield
 
         except pyodbc.DatabaseError as e:
-            logger.debug("Netezza error: {}", e)
+            logger.debug("Netezza error: {}", str(e))
             try:
                 self.rollback_if_open()
             except pyodbc.DatabaseError:
@@ -161,6 +163,7 @@ class NetezzaConnectionManager(connection_cls):
         last_code, last_message = cursor.messages[-1]
         return AdapterResponse(last_message, last_code, cursor.rowcount)
 
+    # Override to prevent error when calling execute without bindings
     def add_query(
         self,
         sql: str,
@@ -190,6 +193,10 @@ class NetezzaConnectionManager(connection_cls):
             else:
                 cursor.execute(sql)
 
+            # Get the result of the first non-empty result set (if any)
+            while cursor.description is None:
+                if not cursor.nextset():
+                    break
             fire_event(
                 SQLQueryStatus(
                     status=str(self.get_response(cursor)),
@@ -198,16 +205,37 @@ class NetezzaConnectionManager(connection_cls):
             )
 
             return connection, cursor
-        
+
     @classmethod
     def data_type_code_to_name(cls, type_code) -> str:
         name_map = {
-            'int': 'INTEGER',
-            'str': 'STRING',
-            'date': 'DATE',
-            'datetime': 'DATETIME',
-            'bool': 'BOOLEAN',
-            'float': 'FLOAT'
+            "int": "INTEGER",
+            "str": "STRING",
+            "date": "DATE",
+            "datetime": "DATETIME",
+            "bool": "BOOLEAN",
+            "float": "FLOAT",
         }
         assert inspect.isclass(type_code)
         return name_map[type_code.__name__]
+
+    # Override to support multiple queries
+    # Source: https://github.com/dbt-msft/dbt-sqlserver/blob/master/dbt/adapters/sqlserver/sql_server_connection_manager.py
+    def execute(
+        self, sql: str, auto_begin: bool = False, fetch: bool = False
+    ) -> Tuple[AdapterResponse, agate.Table]:
+        sql = self._add_query_comment(sql)
+        _, cursor = self.add_query(sql, auto_begin)
+        response = self.get_response(cursor)
+        if fetch:
+            # Get the result of the first non-empty result set (if any)
+            while cursor.description is None:
+                if not cursor.nextset():
+                    break
+            table = self.get_result_from_cursor(cursor)
+        else:
+            table = agate_helper.empty_table()
+        # Step through all result sets so we process all errors
+        while cursor.nextset():
+            pass
+        return response, table

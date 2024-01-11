@@ -9,7 +9,6 @@ from dbt.tests.adapter.incremental.test_incremental_predicates import (
 from dbt.tests.adapter.incremental.test_incremental_unique_id import (
     BaseIncrementalUniqueKey,
 )
-from dbt.tests.util import relation_from_name, run_sql_with_adapter
 
 # Overwrite to explicitly cast to string types in model
 models__delete_insert_incremental_predicates_sql = """

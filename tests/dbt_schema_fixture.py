@@ -22,28 +22,48 @@ def project_cleanup_extra_relations() -> list[tuple[str, str]]:
 
 
 @pytest.fixture(scope="class")
-def project_cleanup(adapter, project_root, project_cleanup_extra_relations):
-    # Wait until tests complete
-    yield
+def project_cleanup_use_manifest() -> bool:
+    return True
 
+
+def get_manifest_relations(project_root):
     # Get project manifest if it exists
     manifest = get_manifest(project_root)
     if not manifest:
-        return
+        return []
 
     # Find all table or view relations and drop them
-    relations = [
+    return [
         ("view" if node.config.materialized == "view" else "table", node.name)
         for node_name, node in manifest.nodes.items()
         if node_name.split(".")[0] in ["model", "seed", "snapshot"]
     ]
-    relations += project_cleanup_extra_relations
+
+
+@pytest.fixture(scope="class")
+def project_cleanup(
+    adapter,
+    project_root,
+    project_cleanup_use_manifest,
+    project_cleanup_extra_relations,
+):
+    # Wait until tests complete
+    yield
+
+    manifest_relations = (
+        get_manifest_relations(project_root) if project_cleanup_use_manifest else []
+    )
+    relations = manifest_relations + project_cleanup_extra_relations
     drop_statements = [
         f"drop {relation_type} {relation_from_name(adapter, relation)} if exists"
         for relation_type, relation in relations
     ]
     sql = ";\n".join(drop_statements)
     run_sql_with_adapter(adapter, sql)
+
+    if len(relations):
+        relation_names = ", ".join(f"{rel_type} '{rel}'" for rel_type, rel in relations)
+        print(f"=== Project cleanup: Dropped {relation_names}")
 
 
 @pytest.fixture(scope="class")
