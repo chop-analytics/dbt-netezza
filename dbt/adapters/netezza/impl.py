@@ -47,8 +47,9 @@ class NetezzaAdapter(SQLAdapter):
         {
             # Netezza does not have a reliable way of determining table modification time
             Capability.TableLastModifiedMetadata: CapabilitySupport(
-                support=Support.Unsupported
-            )
+                Support.Unsupported
+            ),
+            Capability.SchemaMetadataByRelations: CapabilitySupport(Support.Full),
         }
     )
 
