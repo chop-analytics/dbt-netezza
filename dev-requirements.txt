@@ -1,4 +1,4 @@
-dbt-core==1.5.11
+dbt-core==1.6.15
 dbt-tests-adapter==1.5.11
 
 black~=23.10
