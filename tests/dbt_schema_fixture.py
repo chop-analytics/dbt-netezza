@@ -2,13 +2,13 @@
 # instances without schemas enabled
 # Source: https://docs.getdbt.com/docs/contributing/testing-a-new-adapter
 import os
-import warnings
 from argparse import Namespace
 
 import pytest
-from dbt.events.functions import cleanup_event_logger, setup_event_logger
+from dbt.events.logging import setup_event_logger
 from dbt.tests.fixtures.project import TestProjInfo
 from dbt.tests.util import get_manifest, relation_from_name, run_sql_with_adapter
+from dbt_common.events.event_manager_client import cleanup_event_logger
 
 
 @pytest.fixture(scope="class")
@@ -57,6 +57,7 @@ def project_cleanup(
     if len(relations):
         drop_statements = [
             f"drop {relation_type} {relation_from_name(adapter, relation)}"
+            f"{' if exists' if relation_type == 'table' else ''}"
             for relation_type, relation in relations
         ]
         sql = ";".join(drop_statements) + ";"
@@ -68,6 +69,7 @@ def project_cleanup(
 
 @pytest.fixture(scope="class")
 def project(
+    initialization,
     clean_up_logging,
     project_root,
     profiles_root,
@@ -76,6 +78,7 @@ def project(
     profiles_yml,
     dbt_project_yml,
     packages_yml,
+    dependencies_yml,
     selectors_yml,
     adapter,
     project_files,
@@ -85,9 +88,6 @@ def project(
     test_config,
     project_cleanup,
 ):
-    # Logbook warnings are ignored so we don't have to fork logbook to support python 3.10.
-    # This _only_ works for tests in `tests/` that use the project fixture.
-    warnings.filterwarnings("ignore", category=DeprecationWarning, module="logbook")
     log_flags = Namespace(
         LOG_PATH=logs_dir,
         LOG_FORMAT="json",

@@ -1,9 +1,8 @@
 import os
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, FrozenSet, List, Optional, Tuple
 
 import agate
-
 from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.meta import available
 from dbt.adapters.base.relation import BaseRelation
@@ -18,10 +17,9 @@ from dbt.adapters.netezza.column import NetezzaColumn
 from dbt.adapters.netezza.relation import NetezzaRelation
 from dbt.adapters.protocol import AdapterConfig
 from dbt.adapters.sql.impl import LIST_RELATIONS_MACRO_NAME, SQLAdapter
-from dbt.contracts.graph.manifest import Manifest
-from dbt.contracts.graph.nodes import ConstraintType
-from dbt.exceptions import CompilationError, DbtDatabaseError
-from dbt.utils import filter_null_values
+from dbt_common.contracts.constraints import ConstraintType
+from dbt_common.exceptions import CompilationError, DbtDatabaseError
+from dbt_common.utils.dict import filter_null_values
 
 
 @dataclass
@@ -62,13 +60,15 @@ class NetezzaAdapter(SQLAdapter):
     # Source: https://github.com/dbt-labs/dbt-snowflake/blob/fda11c2e822519996101d2c456a51570f4ed1c04/dbt/adapters/snowflake/impl.py#L45-L54
     @classmethod
     def _catalog_filter_table(
-        cls, table: agate.Table, manifest: Manifest
+        cls, table: agate.Table, used_schemas: FrozenSet[Tuple[str, str]]
     ) -> agate.Table:
         lowered = table.rename(column_names=[c.lower() for c in table.column_names])
-        return super()._catalog_filter_table(lowered, manifest)
+        return super()._catalog_filter_table(lowered, used_schemas)
 
     # Source: https://github.com/dbt-labs/dbt-snowflake/blob/fda11c2e822519996101d2c456a51570f4ed1c04/dbt/adapters/snowflake/impl.py#L56-L69
-    def _make_match_kwargs(self, database: str, schema: str, identifier: str):
+    def _make_match_kwargs(
+        self, database: str, schema: str, identifier: str
+    ) -> Dict[str, str]:
         quoting = self.config.quoting
         if identifier is not None and quoting["identifier"] is False:
             identifier = identifier.upper()
@@ -80,7 +80,11 @@ class NetezzaAdapter(SQLAdapter):
             database = database.upper()
 
         return filter_null_values(
-            {"identifier": identifier, "schema": schema, "database": database}
+            {
+                "database": database,
+                "identifier": identifier,
+                "schema": schema,
+            }
         )
 
     # Source: https://github.com/dbt-labs/dbt-snowflake/blob/fda11c2e822519996101d2c456a51570f4ed1c04/dbt/adapters/snowflake/impl.py#L128-L166

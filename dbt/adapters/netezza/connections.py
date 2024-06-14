@@ -6,16 +6,18 @@ from typing import Any, Optional, Tuple
 
 import agate
 import pyodbc
-
-from dbt.adapters.base import Credentials
-from dbt.adapters.sql import SQLConnectionManager as connection_cls
-from dbt.clients import agate_helper
-from dbt.contracts.connection import AdapterResponse, Connection
-from dbt.events import AdapterLogger
-from dbt.events.functions import fire_event
-from dbt.events.types import ConnectionUsed, SQLQuery, SQLQueryStatus
-from dbt.exceptions import DbtDatabaseError, DbtRuntimeError
-from dbt.helper_types import Port
+from dbt.adapters.contracts.connection import AdapterResponse, Connection, Credentials
+from dbt.adapters.events.logging import AdapterLogger
+from dbt.adapters.events.types import ConnectionUsed, SQLQuery, SQLQueryStatus
+from dbt.adapters.sql.connections import SQLConnectionManager
+from dbt_common.clients import agate_helper
+from dbt_common.events.contextvars import get_node_info
+from dbt_common.events.functions import fire_event
+from dbt_common.exceptions import DbtDatabaseError, DbtRuntimeError
+from dbt_common.helper_types import Port
+from dbt_common.utils.casting import cast_to_str
+from mashumaro.jsonschema.annotations import Maximum, Minimum
+from typing_extensions import Annotated
 
 logger = AdapterLogger("Netezza")
 
@@ -33,7 +35,7 @@ class NetezzaCredentials(Credentials):
     database: Optional[str] = None
     schema: Optional[str] = None
     host: Optional[str] = None
-    port: Port = Port(5480)
+    port: Annotated[Port, Minimum(0), Maximum(65535)] = Port(5480)
     retries: int = 1
 
     _ALIASES = {"dbname": "database", "user": "username", "pass": "password"}
@@ -62,7 +64,7 @@ class NetezzaCredentials(Credentials):
         )
 
 
-class NetezzaConnectionManager(connection_cls):
+class NetezzaConnectionManager(SQLConnectionManager):
     TYPE = "netezza"
 
     @contextmanager
@@ -133,11 +135,15 @@ class NetezzaConnectionManager(connection_cls):
             pyodbc.OperationalError,
         ]
 
+        def exponential_backoff(attempt: int):
+            return attempt * attempt
+
         return cls.retry_connection(
             connection,
             connect=connect,
             logger=logger,
             retry_limit=credentials.retries,
+            retry_timeout=exponential_backoff,
             retryable_exceptions=retryable_exceptions,
         )
 
@@ -172,6 +178,19 @@ class NetezzaConnectionManager(connection_cls):
         last_code, last_message = cursor.messages[-1]
         return AdapterResponse(last_message, last_code, cursor.rowcount)
 
+    @classmethod
+    def data_type_code_to_name(cls, type_code) -> str:
+        name_map = {
+            "int": "INTEGER",
+            "str": "STRING",
+            "date": "DATE",
+            "datetime": "DATETIME",
+            "bool": "BOOLEAN",
+            "float": "FLOAT",
+        }
+        assert inspect.isclass(type_code)
+        return name_map[type_code.__name__]
+
     # Override to prevent error when calling execute without bindings
     def add_query(
         self,
@@ -183,7 +202,13 @@ class NetezzaConnectionManager(connection_cls):
         connection = self.get_thread_connection()
         if auto_begin and connection.transaction_open is False:
             self.begin()
-        fire_event(ConnectionUsed(conn_type=self.TYPE, conn_name=connection.name))
+        fire_event(
+            ConnectionUsed(
+                conn_type=self.TYPE,
+                conn_name=cast_to_str(connection.name),
+                node_info=get_node_info(),
+            )
+        )
 
         with self.exception_handler(sql):
             if abridge_sql_log:
@@ -191,7 +216,13 @@ class NetezzaConnectionManager(connection_cls):
             else:
                 log_sql = sql
 
-            fire_event(SQLQuery(conn_name=connection.name, sql=log_sql))
+            fire_event(
+                SQLQuery(
+                    conn_name=cast_to_str(connection.name),
+                    sql=log_sql,
+                    node_info=get_node_info(),
+                )
+            )
             pre = time.time()
 
             cursor = connection.handle.cursor()
@@ -209,24 +240,12 @@ class NetezzaConnectionManager(connection_cls):
             fire_event(
                 SQLQueryStatus(
                     status=str(self.get_response(cursor)),
-                    elapsed=round((time.time() - pre), 2),
+                    elapsed=round((time.time() - pre)),
+                    node_info=get_node_info(),
                 )
             )
 
             return connection, cursor
-
-    @classmethod
-    def data_type_code_to_name(cls, type_code) -> str:
-        name_map = {
-            "int": "INTEGER",
-            "str": "STRING",
-            "date": "DATE",
-            "datetime": "DATETIME",
-            "bool": "BOOLEAN",
-            "float": "FLOAT",
-        }
-        assert inspect.isclass(type_code)
-        return name_map[type_code.__name__]
 
     # Override to support multiple queries
     # Source: https://github.com/microsoft/dbt-fabric/blob/main/dbt/adapters/fabric/fabric_connection_manager.py

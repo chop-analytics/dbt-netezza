@@ -1,5 +1,5 @@
+config-version: 2
 name: dbt_netezza
 version: 1.0
-config-version: 2
 
 macro-paths: ["macros"]
