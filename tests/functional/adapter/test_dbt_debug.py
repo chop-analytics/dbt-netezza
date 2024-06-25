@@ -1,7 +1,11 @@
 from dbt.tests.adapter.dbt_debug.test_dbt_debug import (
-    TestDebugPostgres as BaseDebug,
-    TestDebugProfileVariablePostgres as BaseDebugProfileVariable,
+    BaseDebugProfileVariable,
+)
+from dbt.tests.adapter.dbt_debug.test_dbt_debug import (
     TestDebugInvalidProjectPostgres as BaseDebugInvalidProject,
+)
+from dbt.tests.adapter.dbt_debug.test_dbt_debug import (
+    TestDebugPostgres as BaseDebug,
 )
 
 

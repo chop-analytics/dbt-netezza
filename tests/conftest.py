@@ -1,13 +1,13 @@
 # Source: https://docs.getdbt.com/docs/contributing/testing-a-new-adapter
-import pytest
 import os
+
+import pytest
 
 # Import the dbt fixtures and custom dbt schema fixture
 pytest_plugins = ["dbt.tests.fixtures.project", "tests.dbt_schema_fixture"]
 
 
-@pytest.fixture(scope="class")
-def dbt_profile_target():
+def dbt_profile_target_values():
     return {
         "type": "netezza",
         "threads": 4,
@@ -16,3 +16,8 @@ def dbt_profile_target():
         "user": os.getenv("DBT_TEST_NZ_USER"),
         "pass": os.getenv("DBT_TEST_NZ_PASS"),
     }
+
+
+@pytest.fixture(scope="class")
+def dbt_profile_target():
+    return dbt_profile_target_values()

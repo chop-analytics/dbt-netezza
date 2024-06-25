@@ -221,7 +221,7 @@ class TestDocsGenerateNetezza(NetezzaGenerateProject, BaseDocsGenerate):
 
     # Override to modify casing and types
     @pytest.fixture(scope="class")
-    def expected_catalog(self, project, profile_user, unique_schema):
+    def expected_catalog(self, project, profile_user):
         expected = base_expected_catalog(
             project,
             role=profile_user.upper(),
@@ -235,7 +235,7 @@ class TestDocsGenerateNetezza(NetezzaGenerateProject, BaseDocsGenerate):
             case_columns=True,
         )
         expected["nodes"]["model.test.second_model"]["metadata"]["schema"] = (
-            unique_schema
+            project.test_schema
         )
         return expected
 

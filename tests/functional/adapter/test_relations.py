@@ -1,8 +1,8 @@
 import pytest
-
 from dbt.tests.adapter.relations.test_changing_relation_type import (
     BaseChangeRelationTypeValidator,
 )
+from dbt.tests.adapter.relations.test_dropping_schema_named import BaseDropSchemaNamed
 
 
 # FIXME dbt incorrectly classifies the model as a table rather than a view and fails the rename
@@ -15,3 +15,8 @@ class TestChangeRelationTypesNetezza(BaseChangeRelationTypeValidator):
         # Test fails here when dbt thinks 'model_mc_modelface' is a table instead of a view
         self._run_and_check_materialization("incremental")
         self._run_and_check_materialization("table", extra_args=["--full-refresh"])
+
+
+@pytest.mark.skip("Adapter does not support multiple schemas.")
+class TestDropSchemaNamedNetezza(BaseDropSchemaNamed):
+    pass

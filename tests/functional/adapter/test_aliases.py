@@ -1,12 +1,13 @@
 import pytest
-
-from dbt.tests.adapter.aliases.test_aliases import (
-    BaseAliases,
-    BaseAliasErrors,
-    BaseSameAliasDifferentSchemas,
-    BaseSameAliasDifferentDatabases,
+from dbt.tests.adapter.aliases.fixtures import (
     MACROS__CAST_SQL,
     MACROS__EXPECT_VALUE_SQL,
+)
+from dbt.tests.adapter.aliases.test_aliases import (
+    BaseAliasErrors,
+    BaseAliases,
+    BaseSameAliasDifferentDatabases,
+    BaseSameAliasDifferentSchemas,
 )
 
 

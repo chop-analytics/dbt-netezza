@@ -1,17 +1,16 @@
 import pytest
+from dbt.tests.adapter.utils import fixture_date, fixture_date_spine, fixture_listagg
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
 from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
 from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
 from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
+from dbt.tests.adapter.utils.test_cast import BaseCast
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
 from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampNaive
-from dbt.tests.adapter.utils.test_date_spine import (
-    BaseDateSpine,
-    models__test_date_spine_sql,
-    models__test_date_spine_yml,
-)
+from dbt.tests.adapter.utils.test_date import BaseDate
+from dbt.tests.adapter.utils.test_date_spine import BaseDateSpine
 from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd
 from dbt.tests.adapter.utils.test_datediff import BaseDateDiff
@@ -27,11 +26,7 @@ from dbt.tests.adapter.utils.test_hash import BaseHash
 from dbt.tests.adapter.utils.test_intersect import BaseIntersect
 from dbt.tests.adapter.utils.test_last_day import BaseLastDay
 from dbt.tests.adapter.utils.test_length import BaseLength
-from dbt.tests.adapter.utils.test_listagg import (
-    BaseListagg,
-    models__test_listagg_yml,
-    seeds__data_listagg_csv,
-)
+from dbt.tests.adapter.utils.test_listagg import BaseListagg
 from dbt.tests.adapter.utils.test_null_compare import (
     BaseMixedNullCompare,
     BaseNullCompare,
@@ -75,6 +70,10 @@ class TestBoolOrNetezza(BaseBoolOr):
         return {"seeds": {"boolstyle": "TRUE_FALSE"}}
 
 
+class TestCastNetezza(BaseCast):
+    pass
+
+
 class TestCastBoolToTextNetezza(BaseCastBoolToText):
     pass
 
@@ -115,6 +114,18 @@ select {{ current_timestamp() }} as current_timestamp_default,
         return None
 
 
+class TestDateNetezza(BaseDate):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "test_date.yml": fixture_date.models__test_date_yml,
+            "test_date.sql": self.interpolate_macro_namespace(
+                fixture_date.models__test_date_sql.replace("full outer", "left outer"),
+                "date",
+            ),
+        }
+
+
 class TestDateTruncNetezza(BaseDateTrunc):
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -137,9 +148,12 @@ class TestDateSpineNetezza(BaseDateSpine):
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_date_spine.yml": models__test_date_spine_yml,
+            "test_date_spine.yml": fixture_date_spine.models__test_date_spine_yml,
             "test_date_spine.sql": self.interpolate_macro_namespace(
-                models__test_date_spine_sql.replace("postgres", "netezza"), "date_spine"
+                fixture_date_spine.models__test_date_spine_sql.replace(
+                    "postgres", "netezza"
+                ),
+                "date_spine",
             ),
         }
 
@@ -238,14 +252,14 @@ and calculate.version = data_output.version
     @pytest.fixture(scope="class")
     def seeds(self):
         return {
-            "data_listagg.csv": seeds__data_listagg_csv,
+            "data_listagg.csv": fixture_listagg.seeds__data_listagg_csv,
             "data_listagg_output.csv": self.seeds__data_listagg_output_csv,
         }
 
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_listagg.yml": models__test_listagg_yml,
+            "test_listagg.yml": fixture_listagg.models__test_listagg_yml,
             "test_listagg.sql": self.interpolate_macro_namespace(
                 self.models__test_listagg_sql, "listagg"
             ),
@@ -261,7 +275,7 @@ class TestListaggErrorOrderByNetezza(BaseListagg):
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_listagg.yml": models__test_listagg_yml,
+            "test_listagg.yml": fixture_listagg.models__test_listagg_yml,
             "test_listagg.sql": self.interpolate_macro_namespace(
                 self.models__test_listagg_sql, "listagg"
             ),
@@ -281,7 +295,7 @@ class TestListaggErrorLimitNetezza(BaseListagg):
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_listagg.yml": models__test_listagg_yml,
+            "test_listagg.yml": fixture_listagg.models__test_listagg_yml,
             "test_listagg.sql": self.interpolate_macro_namespace(
                 self.models__test_listagg_sql, "listagg"
             ),
@@ -301,7 +315,7 @@ class TestListaggErrorMultiCharacterDelimiterByNetezza(BaseListagg):
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_listagg.yml": models__test_listagg_yml,
+            "test_listagg.yml": fixture_listagg.models__test_listagg_yml,
             "test_listagg.sql": self.interpolate_macro_namespace(
                 self.models__test_listagg_sql, "listagg"
             ),
