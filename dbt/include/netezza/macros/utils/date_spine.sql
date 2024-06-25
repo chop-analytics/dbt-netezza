@@ -10,7 +10,7 @@
             {{
                 dateadd(
                     datepart,
-                    "generated_number",
+                    "generated_number - 1",
                     start_date
                 )
             }}
