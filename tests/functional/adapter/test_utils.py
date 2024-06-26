@@ -42,7 +42,7 @@ from dbt.tests.adapter.utils.test_validate_sql import BaseValidateSqlMethod
 from dbt.tests.util import check_relations_equal, run_dbt
 
 
-@pytest.mark.skip("any_value not supported by this adapter")
+@pytest.mark.skip("Adapter does not support any_value")
 class TestAnyValueNetezza(BaseAnyValue):
     pass
 

@@ -3,25 +3,53 @@ from pathlib import Path
 
 import pytest
 from dbt.tests.adapter.hooks.test_model_hooks import (
-    MODEL_PRE_HOOK,
     MODEL_POST_HOOK,
+    MODEL_PRE_HOOK,
     BaseTestPrePost,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestDuplicateHooksInConfigs as BaseDuplicateHooksInConfigs,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestHookRefs as BaseHookRefs,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestHooksRefsOnSeeds as BaseHooksRefsOnSeeds,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooks as BasePrePostModelHooks,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooksInConfig as BasePrePostModelHooksInConfig,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooksInConfigKwargs as BasePrePostModelHooksInConfigKwargs,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooksInConfigWithCount as BasePrePostModelHooksInConfigWithCount,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooksOnSeeds as BasePrePostModelHooksOnSeeds,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooksOnSeedsPlusPrefixed as BasePrePostModelHooksOnSeedsPlusPrefixed,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooksOnSeedsPlusPrefixedWhitespace as BasePrePostModelHooksOnSeedsPlusPrefixedWhitespace,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooksOnSnapshots as BasePrePostModelHooksOnSnapshots,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostModelHooksUnderscores as BasePrePostModelHooksUnderscores,
+)
+from dbt.tests.adapter.hooks.test_model_hooks import (
     TestPrePostSnapshotHooksInConfigKwargs as BasePrePostSnapshotHooksInConfigKwargs,
 )
 from dbt.tests.adapter.hooks.test_run_hooks import (
     TestAfterRunHooks as BaseAfterRunHooks,
+)
+from dbt.tests.adapter.hooks.test_run_hooks import (
     TestPrePostRunHooks as BasePrePostRunHooks,
 )
 
@@ -256,30 +284,22 @@ class TestPrePostModelHooksInConfigWithCountNetezza(
         }
 
 
-# FIXME Refactor test to not add column or investigate transaction
-@pytest.mark.skip("Netezza does not support adding a column in a transaction block")
 class TestPrePostModelHooksOnSeedsNetezza(BasePrePostModelHooksOnSeeds):
     pass
 
 
-# FIXME Refactor test to not add column or investigate transaction
-@pytest.mark.skip("Netezza does not support adding a column in a transaction block")
 class TestPrePostModelHooksOnSeedsPlusPrefixedNetezza(
     BasePrePostModelHooksOnSeedsPlusPrefixed
 ):
     pass
 
 
-# FIXME Refactor test to not add column or investigate transaction
-@pytest.mark.skip("Netezza does not support adding a column in a transaction block")
 class TestPrePostModelHooksOnSeedsPlusPrefixedWhitespaceNetezza(
     BasePrePostModelHooksOnSeedsPlusPrefixedWhitespace
 ):
     pass
 
 
-# FIXME Refactor test to not add column or investigate transaction
-@pytest.mark.skip("Netezza does not support adding a column in a transaction block")
 class TestPrePostModelHooksOnSnapshotsNetezza(BasePrePostModelHooksOnSnapshots):
     pass
 
@@ -316,8 +336,6 @@ class TestPrePostModelHooksUnderscoresNetezza(
         }
 
 
-# FIXME Refactor test to not add column or investigate transaction
-@pytest.mark.skip("Netezza does not support adding a column in a transaction block")
 class TestPrePostSnapshotHooksInConfigKwargsNetezza(
     BasePrePostSnapshotHooksInConfigKwargs
 ):
